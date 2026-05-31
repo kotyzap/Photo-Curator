@@ -1,19 +1,16 @@
 # 📸 Photo Curator
 
-**v3.3** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — drop the blurry ones, collapse burst duplicates, and surface your best shots — all running entirely on your own machine. Nothing is uploaded anywhere.
+**v3.4** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — drop the blurry ones, collapse burst duplicates, and surface your best shots — all running entirely on your own machine. Nothing is uploaded anywhere.
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
-
-<img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/deeb6bea-fdd6-4e13-9747-ab7c32f13f2f" />
-
 
 ![pipeline: Cull → Dedup → Rank](https://img.shields.io/badge/pipeline-Cull%20→%20Dedup%20→%20Rank-blue)
 
 ## Features
 
 - **1 · Cull** — flags out-of-focus shots using a *contrast-normalized* sharpness measure, so genuinely soft frames are caught while low-contrast-but-sharp shots (haze, night, big skies) are kept. Sorts into **Sharp / Soft (recoverable) / Blurry**, with a one-click **Sharp ⇄ Blurry** override on every photo. Blurry shots are moved to `Blurred/` only when you press **Move blurry** — review first, move second.
-- **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is kept and labelled **“Best of N”** (so you can see how many near-duplicates it stood in for). Matching is vectorized and signatures are cached, so big cards stay fast.
-- **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
+- **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is kept and labelled **“Best of N”** (so you can see how many near-duplicates it stood in for). Frames with no near-duplicate are labelled **“Original”**. Matching is vectorized and signatures are cached, so big cards stay fast.
+- **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 - **⚡ God Mode** — one button runs the whole pipeline automatically: **Cull → Dedup → Rank**, advancing through each stage and landing on your ranked TOP N. It produces the ranking without moving any files, so you still review and move rejects yourself.
 - Live preview (newest first) with pagination for huge sets, per-stage progress with elapsed time and **ETA**, EXIF-orientation-correct thumbnails, light/dark theme, lightbox with arrow-key review, and optional auto-move of rejects into `Blurred/`, `Duplicates/`, and `TOP_N/` subfolders.
 

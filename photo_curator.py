@@ -587,20 +587,34 @@ def run_rank(folder):
         if not paths:
             s['status'] = 'No images to rank'
             return
-        s['total'] = len(paths)
+        total = len(paths)
+        s['total'] = total
         analyzer = AdvancedPhotoAnalyzer()
+
+        t0 = time.time()
+
+        def _fmt(sec):
+            sec = int(max(0, sec)); h, r = divmod(sec, 3600); m, s_ = divmod(r, 60)
+            return f"{h}h{m:02d}m" if h else (f"{m}m{s_:02d}s" if m else f"{s_}s")
+
         for idx, p in enumerate(paths):
             if s.get('cancel'):
-                s['status'] = f"Stopped · ranked {len(s['scores'])} so far"
+                s['status'] = (f"Stopped at {idx}/{total} · ranked {len(s['scores'])} so far · "
+                               f"elapsed {_fmt(time.time()-t0)}")
                 return
-            s['progress'] = int((idx + 1) / len(paths) * 100)
-            s['status'] = f"Ranking {p.name} ({idx + 1}/{len(paths)})"
+            done = idx + 1
+            s['progress'] = int(done / total * 100)
+            elapsed = time.time() - t0
+            rate = done / elapsed if elapsed > 0 else 0
+            eta = (total - done) / rate if rate > 0 else 0
+            s['status'] = (f"Ranking {p.name} ({done}/{total}, {done/total*100:.0f}%) · "
+                           f"elapsed {_fmt(elapsed)} · ETA {_fmt(eta)}")
             sc = analyzer.analyze_image(str(p))
             if sc:
                 s['scores'].append(sc)
             s['analyzed'] = len(s['scores'])
         s['progress'] = 100
-        s['status'] = f"Done · ranked {len(s['scores'])} {chain}"
+        s['status'] = f"Done · ranked {len(s['scores'])} {chain} · elapsed {_fmt(time.time()-t0)}"
     except Exception as e:
         logger.error(f"rank failed: {e}", exc_info=True)
         s['status'] = f"Error: {e}"
@@ -613,7 +627,7 @@ def run_rank(folder):
 # --------------------------------------------------------------------------- #
 HTML = r'''<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Photo Curator v3.3</title>
+<title>Photo Curator v3.4</title>
 <style>
   :root{--bg:#f4f6fb;--panel:#fff;--panel2:#eef1f7;--text:#1c2330;--muted:#6b7280;
         --accent:#2563eb;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--border:#dde3ec;--shadow:rgba(20,40,80,.10)}
@@ -730,7 +744,7 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .toast.good{border-left-color:var(--good)} .toast.bad{border-left-color:var(--bad)} .toast.info{border-left-color:var(--accent)}
 </style></head><body>
 <div class="top">
-  <div class="brand">🎞️ Photo Curator <small>v3.3</small></div>
+  <div class="brand">🎞️ Photo Curator <small>v3.4</small></div>
   <div class="steps">
     <div class="step active" data-step="cull">1 · Cull</div>
     <div class="step" data-step="dedup">2 · Dedup</div>
@@ -961,10 +975,16 @@ async function godRun(){
     for(const step of ['cull','dedup','rank']){
       if(godAbort)break;
       activateStep(step);
+      // Lock the auto-move checkbox during a God-mode run (only present on the
+      // Dedup step) so it can't be toggled mid-pipeline.
+      {const ao=document.getElementById('autoOrg'); if(ao)ao.disabled=true;}
       await new Promise(res=>{ godResolve=res; startStep(step); });
     }
     if(!godAbort)toast('✨ God mode complete — your TOP photos are ranked','good');
-  } finally { godMode=false;setGodBtn(false);startBtn.disabled=false; }
+  } finally {
+    godMode=false;setGodBtn(false);startBtn.disabled=false;
+    const ao=document.getElementById('autoOrg'); if(ao)ao.disabled=false;  // re-enable
+  }
 }
 godBtn.onclick=()=>{
   if(godMode){ godAbort=true; doStop(); toast('Stopping God mode…','bad'); }
@@ -1049,7 +1069,7 @@ function cullCard(p){
   const toggle=currentStep==='cull'?`<button class="status-toggle" data-path="${path}">${p.kept?'→ Blurry':'✓ Keep'}</button>`:'';
   const cls=p.kept?'kept':(p.rejected?'rejected':'');
   const info=isDedup
-    ? `<div class="photo-score" style="font-weight:500;opacity:.75">${g>1?((g-1)+' similar set aside'):'no duplicates'}</div>`
+    ? `<div class="photo-score" style="font-weight:500;opacity:.75">${g>1?((g-1)+' similar set aside'):'Original'}</div>`
     : `<div class="photo-score">${p.score}</div>`;
   return `<div class="photo-card ${cls}" data-i="${i}" data-path="${path}">${badge}${toggle}
     <img class="photo-img" src="${p.thumb}" loading="lazy" decoding="async">
@@ -1083,7 +1103,7 @@ function renderGallery(items){   /* dedup: paginated + reconciling (order-stable
       const b=node.querySelector('.badge');
       const sc=node.querySelector('.photo-score');
       if(b)b.textContent=(g>1?('★ Best of '+g):'KEPT');
-      if(sc)sc.textContent=(g>1?((g-1)+' similar set aside'):'no duplicates');
+      if(sc)sc.textContent=(g>1?((g-1)+' similar set aside'):'Original');
       node.dataset.i=i;delete existing[key];}
     else{const w=document.createElement('div');w.innerHTML=cullCard(p);node=w.firstElementChild;node.dataset.i=i;}
     frag.appendChild(node);});
@@ -1210,7 +1230,7 @@ function showLb(){
   document.getElementById('lbImg').src='/api/image?path='+encodeURIComponent(p.path);
   document.getElementById('lbName').textContent=(p.rank!=null?'#'+p.rank+'  ':'')+p.name;
   const extra=(currentStep==='dedup')
-    ? ((p.group>1)?('   ·   Best of '+p.group+' ('+(p.group-1)+' set aside)'):'   ·   no duplicates')
+    ? ((p.group>1)?('   ·   Best of '+p.group+' ('+(p.group-1)+' set aside)'):'   ·   Original')
     : (p.score!=null?'   ·   '+p.score:'');
   document.getElementById('lbCount').textContent=(lbIndex+1)+' / '+lbList.length+extra;
   const rm=document.getElementById('lbRemove'),rs=document.getElementById('lbRestore'),tg=document.getElementById('lbToggle');
