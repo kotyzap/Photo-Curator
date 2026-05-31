@@ -59,3 +59,7 @@ Tested on **macOS**. The native folder picker uses `osascript` and SD-card detec
 ## Buy me a Ko-Fi
 
 <div align="center"><a href='https://ko-fi.com/B3S720JCU6' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></div>
+
+## Explainer Infographics
+<img width="2752" height="1536" alt="Photo_Curator_Software_Processing_Workflow" src="https://github.com/user-attachments/assets/4b197f8b-3df7-44ef-a084-2955a0171ad7" />
+
