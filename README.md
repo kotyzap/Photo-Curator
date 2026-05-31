@@ -1,5 +1,8 @@
 # 📸 Photo Curator
 
+<img width="2752" height="1536" alt="Automated_Photo_Culling_Workflow" src="https://github.com/user-attachments/assets/d6092dc5-b13e-469f-bdcb-9f03c7c7d223" />
+
+
 **v3.4** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — drop the blurry ones, collapse burst duplicates, and surface your best shots — all running entirely on your own machine. Nothing is uploaded anywhere.
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
