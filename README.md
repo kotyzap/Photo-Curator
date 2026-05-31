@@ -50,3 +50,8 @@ Tested on **macOS**. The native folder picker uses `osascript` and SD-card detec
 ## License
 
 [MIT](LICENSE)
+
+
+## Do you like Photo Curator? Buy me a coffee! ;-)
+
+<a href='https://ko-fi.com/B3S720JCU6' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
