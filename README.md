@@ -15,8 +15,22 @@ Built for photographers who come home from a trip with a few thousand frames and
 ## Features
 
 - **1 · Cull** — flags out-of-focus shots using a *contrast-normalized* sharpness measure, so genuinely soft frames are caught while low-contrast-but-sharp shots (haze, night, big skies) are kept. Sorts into **Sharp / Soft (recoverable) / Blurry**, with a one-click **Sharp ⇄ Blurry** override on every photo. Blurry shots are moved to `Blurred/` only when you press **Move blurry** — review first, move second.
+
+
 - **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is kept and labelled **“Best of N”** (so you can see how many near-duplicates it stood in for). Frames with no near-duplicate are labelled **“Original”**. Matching is vectorized and signatures are cached, so big cards stay fast.
+
+<img width="2167" height="956" alt="Screenshot 2026-05-31 at 20 50 17" src="https://github.com/user-attachments/assets/b09bcc8f-500e-49fa-8f66-917a8be55fc7" />
+
+
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
+
+<img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/47e2f08d-6868-4517-b0ff-4c09008fdb83" />
+
+
+<img width="2152" height="950" alt="Screenshot 2026-05-31 at 20 41 10" src="https://github.com/user-attachments/assets/b4b54e77-8984-4730-ab97-b2b61e6b64ec" />
+
+
+
 - **⚡ God Mode** — one button runs the whole pipeline automatically: **Cull → Dedup → Rank**, advancing through each stage and landing on your ranked TOP N. It produces the ranking without moving any files, so you still review and move rejects yourself.
 - Live preview (newest first) with pagination for huge sets, per-stage progress with elapsed time and **ETA**, EXIF-orientation-correct thumbnails, light/dark theme, lightbox with arrow-key review, and optional auto-move of rejects into `Blurred/`, `Duplicates/`, and `TOP_N/` subfolders.
 
