@@ -8,12 +8,12 @@ Built for photographers who come home from a trip with a few thousand frames and
 
 <img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/0ce6577f-6f0b-4109-9d82-c570e238b03a" />
 
-## Features
+## ✨ Features
 
-- **1 · Cull** — flags out-of-focus shots using a *contrast-normalized* sharpness measure, so genuinely soft frames are caught while low-contrast-but-sharp shots (haze, night, big skies) are kept. Every photo has a one-click **Sharp ⇄ Blurry** override.
-- **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is the one kept.
-- **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
-- Live preview as it works, dark/light theme, lightbox with arrow-key review, and optional auto-move of rejects into `Blurred/`, `Duplicates/`, and `TOP_N/` subfolders.
+* 📸 **Cull (Smart Sharpness Detection)** — Automatically flags out-of-focus shots using a contrast-normalized sharpness measure. Genuinely soft frames are caught, while low-contrast-but-sharp scenes (like haze, night shots, or vast skies) are safely preserved. Includes a quick one-click `Sharp ⇄ Blurry` override for total control.
+* 👯 **Dedup (Intelligent Burst Collapse)** — Merges identical burst sequences into a single frame using global perceptual-hash clustering. It utilizes EXIF capture-time to tighten burst detection and ORB feature-matching to prevent distinct scenes from being wrongly merged. The sharpest frame of each group is automatically selected as the keeper.
+* 🏆 **Rank (Esthetic Scoring)** — Scores each photo based on composition, lighting, focus, color, and contrast. It highlights your `TOP N` best shots, complete with a per-photo hexagonal radar chart and a `TOP-N` average "metric profile". If you skip the Dedup step, Ranking automatically folds the clustering in so a one-click run still delivers a burst-free result.
+* 💻 **Modern UX & Automation** — Features a real-time live preview as it processes, full dark/light theme support, and a responsive lightbox with arrow-key navigation. Optionally, it can automatically sort and move your files into `Blurred/`, `Duplicates/`, and `TOP_N/` subfolders.
 
 ## Install
 
