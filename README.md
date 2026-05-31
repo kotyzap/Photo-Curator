@@ -34,7 +34,7 @@ Then open <http://127.0.0.1:5000> in your browser. Pick a folder (or paste a pat
 A typical workflow on a big card is **Cull → Dedup → Rank** in order — each step feeds its survivors to the next, so ranking only scores the photos worth scoring.
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=99fJBdjp3is?si=8lLeUFSN7IvmiQHt">
+  <a href="https://www.youtube.com/watch?v=99fJBdjp3is">
     <img src="https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg" alt="Watch on YouTube" />
   </a>
 </div>
