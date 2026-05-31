@@ -1,6 +1,6 @@
 # 📸 Photo Curator
 
-**v3.2** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — drop the blurry ones, collapse burst duplicates, and surface your best shots — all running entirely on your own machine. Nothing is uploaded anywhere.
+**v3.2** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs (and see SD card folders in DCIM folder automatically) and it walks you through three steps — drop the blurry ones, collapse burst duplicates, and surface your best shots — all running entirely on your own machine. Nothing is uploaded anywhere.
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
 
@@ -33,6 +33,8 @@ Then open <http://127.0.0.1:5000> in your browser. Pick a folder (or paste a pat
 
 A typical workflow on a big card is **Cull → Dedup → Rank** in order — each step feeds its survivors to the next, so ranking only scores the photos worth scoring.
 
+<div align="center"><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/99fJBdjp3is?si=8lLeUFSN7IvmiQHt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+
 ## How it works
 
 | Step | Metric | Notes |
@@ -54,4 +56,5 @@ Tested on **macOS**. The native folder picker uses `osascript` and SD-card detec
 
 ## Do you like Photo Curator? Buy me a coffee! ;-)
 
-<a href='https://ko-fi.com/B3S720JCU6' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+<div align="center"><a href='https://ko-fi.com/B3S720JCU6' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+</div>
