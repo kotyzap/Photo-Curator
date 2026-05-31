@@ -24,17 +24,17 @@ Built for photographers who come home from a trip with a few thousand frames and
 
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 
-<img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/47e2f08d-6868-4517-b0ff-4c09008fdb83" />
+<img width="2855" height="1866" alt="SCR-20260531-smzr" src="https://github.com/user-attachments/assets/bc403303-2edf-4a48-9f25-27502627416f" />
+<img width="2139" height="954" alt="Screenshot 2026-05-31 at 21 23 11" src="https://github.com/user-attachments/assets/2499032b-35da-4823-8d01-0efee29c7b58" />
 
-
-<img width="2152" height="950" alt="Screenshot 2026-05-31 at 20 41 10" src="https://github.com/user-attachments/assets/b4b54e77-8984-4730-ab97-b2b61e6b64ec" />
 
 
 
 - **⚡ God Mode** — one button runs the whole pipeline automatically: **Cull → Dedup → Rank**, advancing through each stage and landing on your ranked TOP N. It produces the ranking without moving any files, so you still review and move rejects yourself.
 - Live preview (newest first) with pagination for huge sets, per-stage progress with elapsed time and **ETA**, EXIF-orientation-correct thumbnails, light/dark theme, lightbox with arrow-key review, and optional auto-move of rejects into `Blurred/`, `Duplicates/`, and `TOP_N/` subfolders.
 
-<img width="1440" height="810" alt="Slide04" src="https://github.com/user-attachments/assets/302e6cc6-430d-4702-a555-bc57ad42b271" />
+<img width="2151" height="953" alt="Screenshot 2026-05-31 at 21 20 43" src="https://github.com/user-attachments/assets/d42867cb-1b99-4966-8e5e-1693e97a1c25" />
+
 
 
 ## Install
