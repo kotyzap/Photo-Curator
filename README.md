@@ -1,5 +1,8 @@
 # 📸 Photo Curator
 
+<img width="1503" height="744" alt="Photo-Curator-v34" src="https://github.com/user-attachments/assets/5e92e0df-be74-4837-889f-a6c3e5161f0b" />
+
+
 <img width="2752" height="1536" alt="Automated_Photo_Culling_Workflow" src="https://github.com/user-attachments/assets/d6092dc5-b13e-469f-bdcb-9f03c7c7d223" />
 
 **v3.4** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
@@ -40,11 +43,16 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 
 - **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is kept and labelled **"Best of N"** (so you can see how many near-duplicates it stood in for). Frames with no near-duplicate are labelled **"Original"**. Matching is vectorized and signatures are cached, so big cards stay fast.
 
-<img width="2167" height="956" alt="Dedup view" src="https://github.com/user-attachments/assets/b09bcc8f-500e-49fa-8f66-917a8be55fc7" />
+<img width="2157" height="963" alt="Dedup-Japan" src="https://github.com/user-attachments/assets/a7a7eb2d-f68e-4ec0-9b0b-efc50769c0b2" />
+
 
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 
 <img width="2855" height="1866" alt="Rank view" src="https://github.com/user-attachments/assets/bc403303-2edf-4a48-9f25-27502627416f" />
+
+<img width="3550" height="1497" alt="SCR-20260531-sxoh" src="https://github.com/user-attachments/assets/f63464b1-02d2-4bb6-8db1-72b4c861f5b5" />
+
+
 <img width="2139" height="954" alt="Rank radar" src="https://github.com/user-attachments/assets/2499032b-35da-4823-8d01-0efee29c7b58" />
 
 - **⚡ God Mode** — one button runs the whole pipeline automatically: **Cull → Dedup → Rank**, advancing through each stage and landing on your ranked TOP N. It produces the ranking *without moving any files*, so you still review and move rejects yourself.
@@ -105,4 +113,4 @@ Every coffee genuinely helps — thank you! 🙏
 
 [MIT](LICENSE)
 
-<img width="2752" height="1536" alt="Photo Curator workflow" src="https://github.com/user-attachments/assets/4b197f8b-3df7-44ef-a084-2955a0171ad7" />
+
