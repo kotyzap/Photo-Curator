@@ -62,7 +62,11 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 
 <img width="2139" height="954" alt="Rank radar" src="https://github.com/user-attachments/assets/2499032b-35da-4823-8d01-0efee29c7b58" />
 
-- **📱 Phone Background selector** *(new in v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
+## 📱 Phone Background selector - (new in v3.5)
+- *(new in v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
+
+<div align="center"><img width="75%" alt="Phones-PhotoCurator-BG" src="https://github.com/user-attachments/assets/f6652bbd-575c-4500-9234-c78b7601e085" /></div>
+
 
 ## ⚡️God Mode
 
