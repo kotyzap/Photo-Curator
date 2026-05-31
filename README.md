@@ -4,6 +4,9 @@
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
 
+<img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/deeb6bea-fdd6-4e13-9747-ab7c32f13f2f" />
+
+
 ![pipeline: Cull → Dedup → Rank](https://img.shields.io/badge/pipeline-Cull%20→%20Dedup%20→%20Rank-blue)
 
 ## Features
