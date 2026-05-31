@@ -115,7 +115,7 @@ Tested on **macOS**. The native folder picker uses `osascript` and SD-card detec
 ## ☕ Support the project
 
 <div align="center">Photo Curator is free, open source, and runs entirely on your own machine. 
-  If it saved you time, the best way to say thanks is to fuel the next feature:
+<br>  If it saved you time, the best way to say thanks is to fuel the next feature:
 
 
   <a href='https://ko-fi.com/B3S720JCU6' target='_blank'><img height='44' style='border:0px;height:44px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
