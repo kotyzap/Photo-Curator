@@ -6,6 +6,8 @@ Built for photographers who come home from a trip with a few thousand frames and
 
 ![pipeline: Cull → Dedup → Rank](https://img.shields.io/badge/pipeline-Cull%20→%20Dedup%20→%20Rank-blue)
 
+<img width="1918" height="965" alt="Screenshot 2026-05-30 at 17 08 51" src="https://github.com/user-attachments/assets/0ce6577f-6f0b-4109-9d82-c570e238b03a" />
+
 ## Features
 
 - **1 · Cull** — flags out-of-focus shots using a *contrast-normalized* sharpness measure, so genuinely soft frames are caught while low-contrast-but-sharp shots (haze, night, big skies) are kept. Every photo has a one-click **Sharp ⇄ Blurry** override.
