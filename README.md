@@ -95,7 +95,7 @@ pip install -r requirements.txt
 python photo_curator.py
 ```
 
-Then open <http://127.0.0.1:5014> in your browser. Pick a folder (or paste a path), choose a step, and press **Start**.
+Then open <http://127.0.0.1:5014> (note 50 mm, F1.4 in the port) in your browser. Pick a folder (or paste a path), choose a step, and press **Start**.
 
 ## Workflow
 
