@@ -50,12 +50,10 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 ## Rank and find TOP Photos — scores each photo on composition, lighting, focus, color, and contrast
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 <div align="center">
-<img width="800" height="450" alt="PhotoCuratorv3 4-ezgif com-video-to-gif-converter (2)" src="https://github.com/user-attachments/assets/1a5a205a-9358-4422-9da4-c1d1e64e3416" />
+<img width="75%" alt="PhotoCuratorv3 4-ezgif com-video-to-gif-converter (2)" src="https://github.com/user-attachments/assets/1a5a205a-9358-4422-9da4-c1d1e64e3416" />
 </div>
 
 <img width="3550" height="1497" alt="SCR-20260531-sxoh" src="https://github.com/user-attachments/assets/f63464b1-02d2-4bb6-8db1-72b4c861f5b5" />
-
-<img width="2139" height="954" alt="Rank radar" src="https://github.com/user-attachments/assets/2499032b-35da-4823-8d01-0efee29c7b58" />
 
 ## 📱 Phone Background selector - (new in v3.5)
 - *(new in v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
