@@ -629,7 +629,7 @@ def run_rank(folder):
 # --------------------------------------------------------------------------- #
 HTML = r'''<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Photo Curator v3.5</title>
+<title>Photo Curator v3.7</title>
 <style>
   :root{--bg:#f4f6fb;--panel:#fff;--panel2:#eef1f7;--text:#1c2330;--muted:#6b7280;
         --accent:#2563eb;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--border:#dde3ec;--shadow:rgba(20,40,80,.10);color-scheme:light}
@@ -726,7 +726,7 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .lb-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:22px;width:42px;height:42px;border-radius:50%;cursor:pointer;z-index:30}
   .lb-close:hover{background:rgba(255,255,255,.4)}
   .lb-actions{display:flex;gap:10px;align-items:center;z-index:30}
-  .lb-btn{border:none;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#fff}
+  .lb-btn{border:none;border-radius:9px;height:38px;padding:0 14px;font-size:13px;line-height:1;font-weight:700;cursor:pointer;color:#fff;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
   .lb-btn.remove{background:rgba(220,38,38,.85)} .lb-btn.remove:hover{background:#dc2626}
   .lb-btn.restore{background:rgba(255,255,255,.22)} .lb-btn.restore:hover{background:rgba(255,255,255,.4)}
   .lb-btn.toggle{background:rgba(37,99,235,.85)} .lb-btn.toggle:hover{background:#2563eb}
@@ -740,6 +740,15 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .bar .track{flex:1;display:block;height:8px;background:rgba(255,255,255,.14);border-radius:4px;overflow:hidden}
   .bar .fill{display:block;height:100%;border-radius:4px;transition:width .25s}
   .bar .num{flex:0 0 26px;text-align:right;font-weight:700}.bar.cat .lab{font-weight:700;opacity:1}
+  .exrow{display:grid;grid-template-columns:74px 1fr;gap:10px;align-items:baseline;margin:7px 0;font-size:12px}
+  .exrow .lab{opacity:.55;font-size:11px}
+  .exrow .val{text-align:right;line-height:1.35;overflow-wrap:break-word}
+  .exrow .val a{color:#60a5fa;text-decoration:none}.exrow .val a:hover{text-decoration:underline}
+  .exmap{display:block;margin:8px 0 4px;text-decoration:none}
+  .exmap .tilewrap{position:relative;display:block;width:256px;max-width:100%;height:256px;overflow:hidden;border-radius:8px;border:1px solid rgba(255,255,255,.12)}
+  .exmap .tilewrap img{display:block;width:256px;height:256px}
+  .exmap .pin{position:absolute;width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none}
+  .exmap .cred{display:block;font-size:9px;opacity:.45;margin-top:3px}
   .top-right{display:flex;align-items:center;gap:10px}
   .kofi-btn{display:block;line-height:0;transition:transform .12s}
   .kofi-btn:hover{transform:translateY(-2px)} .kofi-btn img{display:block;border-radius:8px;box-shadow:0 3px 12px var(--shadow)}
@@ -752,7 +761,7 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .toast.good{border-left-color:var(--good)} .toast.bad{border-left-color:var(--bad)} .toast.info{border-left-color:var(--accent)}
 </style></head><body>
 <div class="top">
-  <div class="brand">🎞️ Photo Curator <small>v3.5</small></div>
+  <div class="brand">🎞️ Photo Curator <small>v3.7</small></div>
   <div class="steps">
     <div class="step active" data-step="cull">1 · Cull</div>
     <div class="step" data-step="dedup">2 · Dedup</div>
@@ -1294,6 +1303,34 @@ function showLb(){
     html+=`<div style="font-size:10px;opacity:.5;margin-top:14px">Hover any row for what it measures.</div>`;
     side.style.display='block';side.innerHTML=html;
   }else{side.style.display='block';side.innerHTML=`<h3>${currentStep==='cull'?'Sharpness':'Photo'}</h3><div style="font-size:13px;opacity:.85">${p.name}</div><div style="font-size:26px;font-weight:700;margin-top:8px">${p.score!=null?p.score:''}</div>`;}
+  loadExif(p.path,side);
+}
+function exifRow(label,val){return `<div class="exrow"><span class="lab">${label}</span><span class="val">${val}</span></div>`;}
+function loadExif(path,side){
+  const token=path;side.dataset.exifToken=token;
+  fetch('/api/exif?path='+encodeURIComponent(path)).then(r=>r.json()).then(e=>{
+    if(side.dataset.exifToken!==token)return; // user moved on
+    let rows='';
+    if(e.date)rows+=exifRow('Date',e.date);
+    if(e.time)rows+=exifRow('Time',(e.time||'').split('+')[0]);
+    if(e.camera)rows+=exifRow('Camera',e.camera);
+    if(e.lens)rows+=exifRow('Lens',e.lens);
+    const settings=[e.focal,e.aperture,e.shutter,e.iso].filter(Boolean)
+      .map(s=>`<span style="white-space:nowrap">${s}</span>`).join(' · ');
+    if(settings)rows+=exifRow('Settings',settings);
+    if(e.lat!=null&&e.lon!=null){
+      const c=e.lat.toFixed(5)+',&nbsp;'+e.lon.toFixed(5);
+      rows+=exifRow('Location',`<a href="https://www.google.com/maps?q=${e.lat},${e.lon}" target="_blank" style="white-space:nowrap">${c}</a>`);
+      const z=13,n=Math.pow(2,z),latRad=e.lat*Math.PI/180;
+      const xt=(e.lon+180)/360*n, yt=(1-Math.log(Math.tan(latRad)+1/Math.cos(latRad))/Math.PI)/2*n;
+      const xtile=Math.floor(xt), ytile=Math.floor(yt);
+      const px=Math.round((xt-xtile)*256), py=Math.round((yt-ytile)*256);
+      const tile='https://tile.openstreetmap.org/'+z+'/'+xtile+'/'+ytile+'.png';
+      rows+=`<a href="https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lon}#map=15/${e.lat}/${e.lon}" target="_blank" class="exmap"><span class="tilewrap"><img src="${tile}" alt="Map" loading="lazy" onerror="this.closest('.exmap').style.display='none'"><span class="pin" style="left:${px}px;top:${py}px"></span></span><span class="cred">© OpenStreetMap contributors</span></a>`;
+    }
+    if(!rows)rows=`<div style="font-size:12px;opacity:.5">No EXIF metadata.</div>`;
+    side.insertAdjacentHTML('beforeend',`<h3>Details</h3>${rows}`);
+  }).catch(()=>{});
 }
 document.getElementById('lbClose').onclick=closeLb;
 document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLb();});
@@ -1395,6 +1432,106 @@ def api_image():
     if not p.is_file() or p.suffix.lower() not in IMG_EXTS:
         abort(404)
     return send_file(str(p))
+
+
+def _ratio(v):
+    try:
+        return float(v)
+    except Exception:
+        try:
+            return v.numerator / v.denominator
+        except Exception:
+            return None
+
+
+def _gps_to_deg(val, ref):
+    try:
+        d = _ratio(val[0]); m = _ratio(val[1]); s = _ratio(val[2])
+        deg = d + m / 60.0 + s / 3600.0
+        if ref in ('S', 'W'):
+            deg = -deg
+        return round(deg, 6)
+    except Exception:
+        return None
+
+
+def extract_exif(path):
+    """Pull human-friendly capture details from a photo's EXIF."""
+    from PIL.ExifTags import TAGS, GPSTAGS
+    out = {}
+    try:
+        with Image.open(path) as img:
+            exif = img.getexif()
+            if not exif:
+                return out
+            tags = {TAGS.get(k, k): v for k, v in exif.items()}
+            # Date / time
+            dt = tags.get('DateTimeOriginal') or tags.get('DateTime')
+            if isinstance(dt, str) and ' ' in dt:
+                d, t = dt.split(' ', 1)
+                out['date'] = d.replace(':', '-')
+                out['time'] = t
+            # Camera / lens
+            make = (tags.get('Make') or '').strip()
+            model = (tags.get('Model') or '').strip()
+            if make or model:
+                out['camera'] = (make + ' ' + model).strip() if model and not model.startswith(make) else (model or make)
+            lens = tags.get('LensModel')
+            if lens:
+                out['lens'] = str(lens).strip()
+            # Shooting settings (live in the Exif sub-IFD)
+            try:
+                sub = exif.get_ifd(0x8769)
+                subtags = {TAGS.get(k, k): v for k, v in sub.items()}
+            except Exception:
+                subtags = {}
+            dto = subtags.get('DateTimeOriginal')
+            if isinstance(dto, str) and ' ' in dto and 'date' not in out:
+                d, t = dto.split(' ', 1)
+                out['date'] = d.replace(':', '-'); out['time'] = t
+            fnum = _ratio(subtags.get('FNumber'))
+            if fnum:
+                out['aperture'] = 'f/' + (str(int(fnum)) if fnum == int(fnum) else str(round(fnum, 1)))
+            exp = subtags.get('ExposureTime')
+            if exp is not None:
+                er = _ratio(exp)
+                if er and er < 1:
+                    out['shutter'] = '1/' + str(int(round(1 / er))) + 's'
+                elif er:
+                    out['shutter'] = str(round(er, 1)) + 's'
+            iso = subtags.get('ISOSpeedRatings') or subtags.get('PhotographicSensitivity')
+            if iso:
+                out['iso'] = 'ISO ' + str(iso if not isinstance(iso, (list, tuple)) else iso[0])
+            fl = _ratio(subtags.get('FocalLength'))
+            if fl:
+                out['focal'] = str(int(round(fl))) + 'mm'
+            if not subtags.get('LensModel') and subtags.get('LensModel') is None and 'lens' not in out:
+                lm = subtags.get('LensModel')
+                if lm:
+                    out['lens'] = str(lm).strip()
+            # GPS
+            try:
+                gps = exif.get_ifd(0x8825)
+            except Exception:
+                gps = None
+            if gps:
+                g = {GPSTAGS.get(k, k): v for k, v in gps.items()}
+                lat = _gps_to_deg(g.get('GPSLatitude'), g.get('GPSLatitudeRef'))
+                lon = _gps_to_deg(g.get('GPSLongitude'), g.get('GPSLongitudeRef'))
+                if lat is not None and lon is not None:
+                    out['lat'] = lat; out['lon'] = lon
+    except Exception:
+        pass
+    return out
+
+
+@app.route('/api/exif')
+def api_exif():
+    path = request.args.get('path', '')
+    p = Path(path)
+    if not p.is_file() or p.suffix.lower() not in IMG_EXTS:
+        abort(404)
+    return jsonify(extract_exif(str(p)))
 
 
 @app.route('/api/set-auto', methods=['POST'])
