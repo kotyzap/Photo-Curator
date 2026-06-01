@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Curator — Cull. Dedup. Rank.</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --bg-soft:#ffffff; --panel:#ffffff; --ink:#0f1726; --ink-soft:#475067;
+    --line:rgba(15,23,38,.10); --line-strong:rgba(15,23,38,.16);
+    --brand:#2563eb; --brand-deep:#1f3a6e; --accent:#e8632a; --accent-soft:#fff1ea;
+    --green:#16a34a; --amber:#f59e0b; --red:#ef4444;
+    --shadow:0 18px 50px -20px rgba(15,23,38,.28); --shadow-soft:0 8px 30px -16px rgba(15,23,38,.25);
+    --radius:18px; --maxw:1120px;
+    --grad:linear-gradient(120deg,#2563eb,#4f46e5 55%,#e8632a);
+  }
+  html[data-theme="dark"]{
+    --bg:#0b0f17; --bg-soft:#0f1521; --panel:#131a28; --ink:#eef2f9; --ink-soft:#9aa6bd;
+    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+    --brand:#60a5fa; --brand-deep:#1b2740; --accent:#ff7a43; --accent-soft:#2a1409;
+    --shadow:0 24px 60px -24px rgba(0,0,0,.7); --shadow-soft:0 10px 34px -18px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+  a{color:var(--brand);text-decoration:none}
+  img{max-width:100%;display:block}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0 0 .4em}
+  h2{font-size:clamp(26px,3.4vw,40px)}
+  .muted{color:var(--ink-soft)}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(160%) blur(12px);
+    background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;gap:18px;height:64px}
+  .brand{font-weight:800;font-size:18px;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .brand small{font-weight:600;color:var(--ink-soft);font-size:12px;border:1px solid var(--line-strong);padding:1px 7px;border-radius:999px}
+  .nav-links{display:flex;gap:22px;margin-left:auto}
+  .nav-links a{color:var(--ink-soft);font-weight:600;font-size:14.5px}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-actions{display:flex;align-items:center;gap:10px;margin-left:18px}
+  .iconbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-strong);background:var(--panel);
+    color:var(--ink);cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.2s}
+  .iconbtn:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;
+    padding:11px 18px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:.2s;white-space:nowrap}
+  .btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow-soft)}
+  .btn-primary:hover{transform:translateY(-2px);filter:saturate(1.08)}
+  .btn-ghost{background:var(--panel);color:var(--ink);border-color:var(--line-strong)}
+  .btn-ghost:hover{transform:translateY(-2px)}
+  .btn-kofi{background:var(--accent);color:#fff}
+  @media(max-width:820px){.nav-links{display:none}}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;padding:72px 0 36px}
+  .hero:before{content:"";position:absolute;inset:-30% -10% auto -10%;height:560px;z-index:-1;
+    background:radial-gradient(60% 60% at 20% 10%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 70%),
+               radial-gradient(50% 50% at 90% 0%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%);
+    filter:blur(8px)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero h1{font-size:clamp(34px,5vw,60px);font-weight:850}
+  .hero h1 .pop{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:clamp(17px,1.7vw,20px);color:var(--ink-soft);max-width:34ch;margin:.2em 0 1.4em}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:13.5px;color:var(--ink-soft)}
+  .trust b{color:var(--ink)}
+  .trust span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 22%,transparent)}
+  .hero-art{position:relative}
+  .hero-art img{border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
+  .hero-badge{position:absolute;left:-14px;bottom:-14px;background:var(--panel);border:1px solid var(--line-strong);
+    border-radius:14px;padding:10px 14px;box-shadow:var(--shadow-soft);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;gap:30px}.lead{max-width:none}}
+
+  /* PIPELINE STRIP */
+  .pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:38px 0 8px}
+  .pipe .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow-soft);position:relative}
+  .pipe .num{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--brand)}
+  .pipe h3{font-size:19px;margin:.3em 0 .15em}
+  .pipe p{margin:0;font-size:14px;color:var(--ink-soft)}
+  .pipe .step:not(:last-child):after{content:"→";position:absolute;right:-19px;top:50%;transform:translateY(-50%);
+    color:var(--ink-soft);font-weight:700;z-index:2}
+  @media(max-width:760px){.pipe{grid-template-columns:1fr}.pipe .step:after{display:none}}
+
+  /* SECTIONS */
+  section{padding:62px 0}
+  .section-head{max-width:680px;margin-bottom:34px}
+  .section-head h2{margin-top:.2em}
+  .feature{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin:0 0 18px}
+  .feature.flip .copy{order:2}
+  .feature .shot img{border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow)}
+  .feature .tag{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;color:#fff;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  .feature ul{list-style:none;padding:0;margin:16px 0 0}
+  .feature li{position:relative;padding-left:26px;margin:9px 0;color:var(--ink-soft)}
+  .feature li:before{content:"";position:absolute;left:0;top:9px;width:14px;height:14px;border-radius:4px;background:var(--brand);opacity:.85}
+  .feature li b{color:var(--ink)}
+  @media(max-width:880px){.feature{grid-template-columns:1fr;gap:24px}.feature.flip .copy{order:0}}
+
+  .alt{background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+  /* SPLIT CARDS (exif / phone) */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-soft);display:flex;flex-direction:column}
+  .card .pad{padding:24px 26px}
+  .card h3{font-size:21px;margin-bottom:.25em}
+  .card p{margin:0;color:var(--ink-soft);font-size:15px}
+  .card .media{background:#0b0f17;display:grid;place-items:center}
+  .card .media img{width:100%}
+  @media(max-width:820px){.duo{grid-template-columns:1fr}}
+
+  /* GODMODE */
+  .godmode{background:var(--brand-deep);color:#fff;border-radius:24px;padding:46px;position:relative;overflow:hidden}
+  html[data-theme="light"] .godmode{background:linear-gradient(120deg,#16224a,#243b73)}
+  .godmode:before{content:"⚡";position:absolute;right:24px;top:-10px;font-size:160px;opacity:.10}
+  .godmode h2{color:#fff}
+  .godmode p{color:#cdd7ee;max-width:60ch;margin:0 auto}
+  .godmode .center{text-align:center;max-width:760px;margin:0 auto}
+  .flow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .flow span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px}
+
+  /* PRIVACY */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow-soft)}
+  .pcard .ic{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px;margin-bottom:12px}
+  .pcard h3{font-size:17px;margin-bottom:.3em}
+  .pcard p{margin:0;font-size:14px;color:var(--ink-soft)}
+  @media(max-width:820px){.grid3{grid-template-columns:1fr}}
+
+  /* HOW TABLE */
+  .how{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .how th,.how td{text-align:left;padding:16px 20px;border-bottom:1px solid var(--line);vertical-align:top}
+  .how th{background:var(--bg-soft);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+  .how td b{color:var(--ink)}
+  .how code{background:var(--bg-soft);border:1px solid var(--line);padding:2px 7px;border-radius:7px;font-size:13px}
+  .how tr:last-child td{border-bottom:none}
+
+  /* DOWNLOAD */
+  .dl{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
+  .steps{counter-reset:s;list-style:none;padding:0;margin:18px 0 0}
+  .steps li{counter-increment:s;position:relative;padding:12px 0 12px 48px;border-bottom:1px dashed var(--line)}
+  .steps li:before{content:counter(s);position:absolute;left:0;top:11px;width:32px;height:32px;border-radius:50%;
+    background:var(--grad);color:#fff;font-weight:800;display:grid;place-items:center}
+  .steps li:last-child{border-bottom:none}
+  .terminal{background:#0b0f17;border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  .terminal .bar{display:flex;gap:7px;padding:12px 14px;background:#161d2b;border-bottom:1px solid rgba(255,255,255,.08)}
+  .terminal .bar i{width:12px;height:12px;border-radius:50%;display:block}
+  .terminal pre{margin:0;padding:18px 20px;color:#c8d2e6;font-size:13px;line-height:1.6;white-space:pre-wrap}
+  .terminal .g{color:#7ee0a2}.terminal .b{color:#7cb6ff}.terminal .o{color:#ffb27a}.terminal .d{color:#6b7589}
+  @media(max-width:820px){.dl{grid-template-columns:1fr}}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 56px;color:var(--ink-soft);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .badges span{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--panel)}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="brand">🎞️ Photo Curator <small>v4.0</small></div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#metrics">How it scores</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download">Download</a>
+    </div>
+    <div class="nav-actions">
+      <button class="iconbtn" id="themeBtn" title="Toggle light / dark">🌙</button>
+      <a class="btn btn-kofi" href="https://ko-fi.com/B3S720JCU6" target="_blank">☕ Ko-fi</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="copy">
+      <span class="eyebrow">Local · Offline · Open source</span>
+      <h1>Come home with 3,000 photos.<br>Leave with your <span class="pop">30 best</span>.</h1>
+      <p class="lead">Point Photo Curator at a folder of shots and it does the ruthless first pass for you — drops the blurry frames, collapses burst duplicates, and surfaces your keepers. All on your own Mac.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#download">⬇ Download for Mac</a>
+        <a class="btn btn-ghost" href="#features">See how it works</a>
+      </div>
+      <div class="trust">
+        <span><i class="dot"></i> <b>100%</b> local</span>
+        <span><i class="dot"></i> Photos never uploaded</span>
+        <span><i class="dot"></i> No accounts · no tracking</span>
+        <span><i class="dot"></i> MIT licensed</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img src="SCR-20260531-sxoh.jpeg" alt="Metric profile synthesized — how Photo Curator reads a photograph">
+      <div class="hero-badge">📸 Every frame, scored on 5 dimensions</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="pipe">
+      <div class="step"><div class="num">STEP 1</div><h3>✂️ Cull</h3><p>Out-of-focus shots flagged by real, contrast-aware sharpness — haze and night skies aren't mistaken for blur.</p></div>
+      <div class="step"><div class="num">STEP 2</div><h3>🧬 Dedup</h3><p>Burst sequences collapse to one frame. The sharpest survivor is kept, labelled “Best of N.”</p></div>
+      <div class="step"><div class="num">STEP 3</div><h3>🏆 Rank</h3><p>Each keeper scored on composition, lighting, focus, colour and contrast, then sorted to your TOP N.</p></div>
+    </div>
+  </div>
+</header>
+
+<!-- PROBLEM -->
+<section>
+  <div class="wrap section-head reveal">
+    <span class="eyebrow">The problem</span>
+    <h2>A long shoot is mostly noise.</h2>
+    <p class="muted" style="font-size:18px">Thousands of near-identical frames, blurred misfires, and a handful of genuine keepers buried in the middle. Going through them by hand is slow and easy to get wrong. Photo Curator does the first pass in seconds per hundred photos — and <b>every decision stays reversible</b>. Nothing is deleted or moved until you say so.</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="alt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">The pipeline</span>
+      <h2>Three steps, each feeding the next.</h2>
+    </div>
+
+    <!-- CULL -->
+    <div class="feature reveal">
+      <div class="copy">
+        <span class="tag" style="background:var(--green)">✂️ Step 1 · Cull</span>
+        <h3>Drop the out-of-focus shots first.</h3>
+        <p class="muted">Sharpness is measured as <code>var(Laplacian) / var(image)</code> on a normalized copy — so it judges <i>real</i> focus, not contrast. Big skies, haze and night scenes are kept, not punished.</p>
+        <ul>
+          <li>Sorted into <b>Sharp · Soft (recoverable) · Blurry</b></li>
+          <li>One-click <b>Sharp ⇄ Blurry</b> override on any frame</li>
+          <li>Adjustable strictness; blurry shots move only when <b>you</b> press the button</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="Cull.png" alt="Cull view — photos sorted by sharpness"></div>
+    </div>
+
+    <!-- DEDUP -->
+    <div class="feature flip reveal">
+      <div class="copy">
+        <span class="tag" style="background:var(--brand)">🧬 Step 2 · Dedup</span>
+        <h3>Collapse the bursts to one keeper.</h3>
+        <p class="muted">A 192-bit perceptual hash clusters near-duplicates globally; EXIF capture-time tightens bursts and ORB feature-matching stops distinct scenes from being wrongly merged.</p>
+        <ul>
+          <li>The <b>sharpest</b> frame of each group is kept</li>
+          <li>Labelled <b>“Best of N”</b> so you see how many it stood in for</li>
+          <li>Vectorized and cached — big cards stay fast</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="Dedup-Japan.png" alt="Dedup view — burst sequences collapsed to best frames"></div>
+    </div>
+
+    <!-- RANK -->
+    <div class="feature reveal">
+      <div class="copy">
+        <span class="tag" style="background:var(--accent)">🏆 Step 3 · Rank</span>
+        <h3>Surface your TOP N — with the reasoning.</h3>
+        <p class="muted">Every keeper is scored across five dimensions and shown with a per-photo radar chart and a TOP-N average “metric profile.” Tune the weights to your taste; ranking shows live progress with elapsed time and ETA.</p>
+        <ul>
+          <li>Composition · Lighting · Focus · Colour · Contrast</li>
+          <li>Adjustable <b>scoring weights</b> — make it yours</li>
+          <li>Skip Dedup? Ranking folds the clustering in automatically</li>
+        </ul>
+      </div>
+      <div class="shot"><img src="Rank-Japan.png" alt="Rank view — top photos sorted with scores"></div>
+    </div>
+  </div>
+</section>
+
+<!-- EXIF + PHONE -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Beyond the score</span>
+      <h2>The details that close the loop.</h2>
+    </div>
+    <div class="duo">
+      <div class="card reveal">
+        <div class="media"><img src="SCR-20260601-ldhl.png" alt="EXIF panel with camera settings and a location map"></div>
+        <div class="pad">
+          <h3>📍 EXIF &amp; maps, inline</h3>
+          <p>Open any photo to see camera, lens, exposure, ISO and capture time — plus an inline map pin for geotagged shots, so you remember exactly where that frame happened.</p>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="media"><img src="Phones-PhotoCurator-BG.png" alt="Phone wallpapers exported from top photos"></div>
+        <div class="pad">
+          <h3>📱 Phone Background export</h3>
+          <p>Tap to mark a top shot as a wallpaper. Export writes full-res originals plus a universal 1290×2796 (19.5:9) crop — pixel-perfect on iPhone and covering nearly all Android.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GOD MODE -->
+<section class="alt">
+  <div class="wrap">
+    <div class="godmode reveal">
+      <div class="center">
+        <span class="eyebrow" style="color:#9ec1ff">One button</span>
+        <h2>⚡ God Mode runs the whole thing.</h2>
+        <p>Press once and Photo Curator advances through Cull → Dedup → Rank automatically, landing on your ranked TOP N — <b>without moving a single file</b>. You still review and move rejects yourself.</p>
+        <div class="flow"><span>Cull</span><span>→</span><span>Dedup</span><span>→</span><span>Rank</span><span>→</span><span>TOP N ✨</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Private by architecture</span>
+      <h2>Your photos never leave your Mac.</h2>
+      <p class="muted">Not a policy — a design. There's no cloud and nothing to sign into.</p>
+    </div>
+    <div class="grid3">
+      <div class="pcard reveal"><div class="ic">🔒</div><h3>100% local</h3><p>All analysis runs in Python on your machine. The only socket opened is a local server on <code>127.0.0.1</code> so your browser can reach it — unreachable from the network.</p></div>
+      <div class="pcard reveal"><div class="ic">🚫</div><h3>No uploads, no tracking</h3><p>No cloud, no accounts, no telemetry, no third-party trackers. It collects nothing and phones home to nothing.</p></div>
+      <div class="pcard reveal"><div class="ic">↩️</div><h3>Always reversible</h3><p>Nothing is deleted or moved without your say-so. Rejects relocate to <code>Blurred/</code>, <code>Duplicates/</code> or <code>TOP_N/</code> only when you press the button.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT SCORES -->
+<section id="metrics" class="alt">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Under the hood</span>
+      <h2>How it reads a photograph.</h2>
+    </div>
+    <div class="reveal">
+    <table class="how">
+      <tr><th style="width:120px">Step</th><th style="width:280px">Metric</th><th>What it does</th></tr>
+      <tr><td><b>Cull</b></td><td><code>var(Laplacian) / var(image)</code> on a 1024px copy</td><td>Resolution-independent sharpness that normalizes out contrast, so haze ≠ blur. Threshold adjustable.</td></tr>
+      <tr><td><b>Dedup</b></td><td>192-bit perceptual hash (avg + dual dHash) + ORB confirm</td><td>Global clustering; EXIF-timed bursts get a relaxed bar; the sharpest frame of each group survives.</td></tr>
+      <tr><td><b>Rank</b></td><td>Weighted focus / lighting / contrast / colour / composition</td><td>Per-photo radar plus a TOP-N average profile. Weights are yours to tune.</td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Get started</span>
+      <h2>One file. One double-click.</h2>
+      <p class="muted">Built for Apple Silicon Macs. Everything it needs is bundled — no pip, no terminal commands, no internet at run time.</p>
+    </div>
+    <div class="dl">
+      <div class="reveal">
+        <ol class="steps">
+          <li>Unzip and keep the <b>PhotoCurator</b> folder together.</li>
+          <li>Right-click <b>“Start Photo Curator.command”</b> → <b>Open</b> (first time only).</li>
+          <li>A little boot animation plays while the engine warms up…</li>
+          <li>Your browser opens automatically at <code>127.0.0.1:5014</code>. Pick a folder, press Start.</li>
+        </ol>
+        <div class="cta" style="margin-top:22px">
+          <a class="btn btn-primary" href="../PhotoCurator-Mac-AppleSilicon-Offline.zip">⬇ Download · Apple Silicon</a>
+          <a class="btn btn-ghost" href="https://ko-fi.com/B3S720JCU6" target="_blank">☕ Support on Ko-fi</a>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:14px">Runs on port 5014 — “50mm f/1.4” — because macOS reserves port 5000 for AirPlay.</p>
+      </div>
+      <div class="terminal reveal">
+        <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+<pre><span class="d">======================================</span>
+        📸  <span class="b">Photo Curator v4.0</span>
+<span class="d">======================================</span>
+
+Using Python: /usr/bin/python3
+Starting the photo engine...
+
+        o          ___________
+       /|\        |  _______  |  )))
+       / \        | | <span class="o">-   -</span> |#|    >>>
+                   | |_______| |  )))
+       you         |___[===]___|
+                    P H O T O   C U R A T O R
+
+   <span class="o">*CLICK*  ✦ flash! ✦</span>
+
+  <span class="g">📸  Got it! Opening your browser...</span>
+  <span class="b">http://127.0.0.1:5014</span>
+</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <div class="brand">🎞️ Photo Curator</div>
+      <p style="margin:.4em 0 0">Free &amp; open source · MIT License · runs entirely on your machine.</p>
+      <div class="badges">
+        <span>🟢 100% local</span><span>🚫 No uploads</span><span>📡 No telemetry</span><span>⚖️ MIT</span><span>🍏 Apple Silicon</span>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <a class="btn btn-kofi" href="https://ko-fi.com/B3S720JCU6" target="_blank">☕ Buy me a Ko-fi</a>
+      <p class="muted" style="margin:.8em 0 0;font-size:12.5px">Made for photographers who shoot a lot and keep a little.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle (remembers choice)
+  const root=document.documentElement, tb=document.getElementById('themeBtn');
+  const saved=localStorage.getItem('pc-theme');
+  if(saved){root.setAttribute('data-theme',saved);}
+  const sync=()=>tb.textContent=root.getAttribute('data-theme')==='dark'?'☀️':'🌙';
+  sync();
+  tb.addEventListener('click',()=>{
+    const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);localStorage.setItem('pc-theme',next);sync();
+  });
+  // Scroll reveal
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
