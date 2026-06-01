@@ -1,11 +1,9 @@
 # 📸 Photo Curator
 
-<img width="1503" height="744" alt="Photo-Curator-v34" src="https://github.com/user-attachments/assets/5e92e0df-be74-4837-889f-a6c3e5161f0b" />
-
-
+<img width="1503" height="744" alt="Photo-Curator-header" src="https://github.com/user-attachments/assets/7c3a22ff-b035-4feb-8d13-07f26dbf1879" />
 <img width="2752" height="1536" alt="Automated_Photo_Culling_Workflow" src="https://github.com/user-attachments/assets/d6092dc5-b13e-469f-bdcb-9f03c7c7d223" />
 
-**v3.5** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
+**v4** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
 
@@ -39,17 +37,17 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 
 ## Photo Curator Features
 
-## Cull
+## 1. Cull
 - **1 · Cull** — flags out-of-focus shots using a *contrast-normalized* sharpness measure, so genuinely soft frames are caught while low-contrast-but-sharp shots (haze, night, big skies) are kept. Sorts into **Sharp / Soft (recoverable) / Blurry**, with a one-click **Sharp ⇄ Blurry** override on every photo. Blurry shots move to `Blurred/` only when you press **Move blurry** — review first, move second.
 
 <div align="center"><img width="800" height="450" alt="PhotoCuratorv3 4-ezgif com-video-to-gif-converter" src="https://github.com/user-attachments/assets/aa7b4452-f6ba-497c-8ed6-b31748a7e068" /></div>
 
-## Dedup
+## 2. Dedup
 - **2 · Dedup** — global perceptual-hash clustering collapses burst sequences to a single frame. EXIF capture-time tightens burst detection, ORB feature-matching prevents distinct scenes from being wrongly merged, and the **sharpest** frame of each group is kept and labelled **"Best of N"** (so you can see how many near-duplicates it stood in for). Frames with no near-duplicate are labelled **"Original"**. Matching is vectorized and signatures are cached, so big cards stay fast.
 
 <img width="2157" height="963" alt="Dedup-Japan" src="https://github.com/user-attachments/assets/a7a7eb2d-f68e-4ec0-9b0b-efc50769c0b2" />
 
-## Rank and find TOP Photos
+## 3. Rank and find TOP Photos
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 <div align="center">
 <img width="800" height="450" alt="PhotoCuratorv3 4-ezgif com-video-to-gif-converter (2)" src="https://github.com/user-attachments/assets/1a5a205a-9358-4422-9da4-c1d1e64e3416" />
@@ -62,11 +60,18 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 
 <img width="2139" height="954" alt="Rank radar" src="https://github.com/user-attachments/assets/2499032b-35da-4823-8d01-0efee29c7b58" />
 
-## 📱 Phone Background selector - (new in v3.5)
-- *(new in v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
+## 📱 Phone Background selector - (new since v3.5)
+- *(new since v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
 
 <div align="center"><img width="75%" alt="Phones-PhotoCurator-BG" src="https://github.com/user-attachments/assets/f6652bbd-575c-4500-9234-c78b7601e085" /></div>
 
+## 📍 Photo EXIF & Location Data - (new since v3.7)
+
+(new since v3.7) — full photo context in one glance. The lightbox Details panel now shows EXIF info (camera, lens, aperture, shutter, ISO), date & time, and an interactive map view with exact coordinates showing where each shot was taken. Browse by place with the 📍 Location filter chip. Perfect for travel curation — instantly map your top-ranked images and remember where you captured each golden moment.
+
+<div align="center">
+<img width="1626" height="950" alt="Screenshot 2026-06-01 at 12 44 07" src="https://github.com/user-attachments/assets/a1b0dc08-fd82-4c4f-844a-9e65e6f8bc3f" />
+</div>
 
 ## ⚡️God Mode
 
