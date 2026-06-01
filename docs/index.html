@@ -71,6 +71,10 @@
   .trust span{display:inline-flex;align-items:center;gap:7px}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 22%,transparent)}
   .hero-art{position:relative}
+  .privacy-note{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+  .privacy-note b{color:var(--text)}
+  .privacy-note code{background:var(--line);padding:1px 5px;border-radius:5px;font-size:.92em}
   .hero-art img{border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
   .hero-badge{position:absolute;left:-14px;bottom:-14px;background:var(--panel);border:1px solid var(--line-strong);
     border-radius:14px;padding:10px 14px;box-shadow:var(--shadow-soft);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
@@ -198,6 +202,9 @@
       </div>
     </div>
     <div class="hero-art">
+      <div class="privacy-note">
+        <b>🔒 100% local.</b> Photo Curator runs a small server bound to <code>127.0.0.1</code> and opens a browser tab against it. No data leaves your machine — no uploads, no telemetry, no external APIs. The only outbound requests are optional OpenStreetMap tiles (GPS view) and a Ko-fi badge, loaded by your browser, not the app.
+      </div>
       <img src="PhotoCuratorv3.4-ezgif.com-video-to-gif-converter.gif" alt="Photo Curator in action — culling, dedup and ranking">
       <div class="hero-badge">📸 See it in action</div>
     </div>
@@ -397,7 +404,7 @@ cd photo-curator-4
 <span style="color:#7cb6ff">python</span> photo_curator.py
           </div>
           <div class="cta" style="margin-top:18px">
-            <a class="btn btn-ghost" href="photo-curator-4.zip">⬇ Download source</a>
+            <a class="btn btn-ghost" href="../Photo-curator-4.zip">⬇ Download source</a>
           </div>
           <p class="muted" style="font-size:12.5px;margin-top:12px">Python 3.9+ · macOS / Windows / Linux · MIT licensed.</p>
         </div>
