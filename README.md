@@ -3,7 +3,7 @@
 <img width="1503" height="744" alt="Photo-Curator-header" src="https://github.com/user-attachments/assets/d5f90cc7-2275-44ac-9dbc-d879582111b7" />
 <img width="2752" height="1536" alt="Automated_Photo_Culling_Workflow" src="https://github.com/user-attachments/assets/d6092dc5-b13e-469f-bdcb-9f03c7c7d223" />
 
-**v3.5** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
+**v3.7** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
 
 Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
 
@@ -58,7 +58,13 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 ## 📱 Phone Background selector - (new in v3.5)
 - *(new in v3.5)* — being in the TOP N already vouches for a photo's quality, so a single tap marks any top shot as a phone wallpaper. Each ranked card and the lightbox get a **📱 toggle** (press **B** in the lightbox), a **Phone BG** filter chip shows just the ones you picked, and **Export Phone BG** writes a `PhoneBG/` folder with two subfolders: `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped and resized to **1290×2796, 19.5:9**). That ratio is pixel-perfect on iPhones and, because phones zoom wallpapers to fill, covers nearly all Android (20:9) too — one universal crop, no device picker.
 
-<div align="center"><img width="75%" alt="Phones-PhotoCurator-BG" src="https://github.com/user-attachments/assets/f6652bbd-575c-4500-9234-c78b7601e085" /></div>
+<div align="center"><img width="30%" alt="Phones-PhotoCurator-BG" src="https://github.com/user-attachments/assets/f6652bbd-575c-4500-9234-c78b7601e085" /></div>
+
+## 📍 Photo EXIF & Location Data - (new in v3.7)
+
+- *(new in v3.7)* — full photo context in one glance. The lightbox Details panel now shows EXIF info (camera, lens, aperture, shutter, ISO), date & time, and an interactive map view with exact coordinates showing where each shot was taken. Browse by place with the 📍 Location filter chip. Perfect for travel curation — instantly map your top-ranked images and remember where you captured each golden moment.
+
+<div align="center"><img width="75%" alt="Screenshot 2026-06-01 at 12 44 07" src="https://github.com/user-attachments/assets/2735ad8b-68fd-4fd5-8c90-b9d7a961b43a" /></div>
 
 
 ## ⚡️God Mode
