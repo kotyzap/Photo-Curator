@@ -209,12 +209,30 @@ def collapse_raw_jpg_pairs(paths, prefer):
     return [p for p in paths if str(p) in keep], collapsed
 
 
+def fmt_of(path):
+    """Display format of a file: 'CR2', 'NEF', 'JPG', ... ('.jpeg' -> 'JPG')."""
+    ext = Path(str(path)).suffix.lstrip('.').upper()
+    return 'JPG' if ext == 'JPEG' else ext
+
+
+def ftype_label(ftype):
+    """Human label for a file-type filter value ('ext:nef' -> 'NEF')."""
+    return ftype[4:].upper() if str(ftype).startswith('ext:') else str(ftype).upper()
+
+
 def filter_ftype(paths, ftype):
-    """Keep only RAW or only non-RAW paths ('all' = no filtering)."""
+    """Keep only the selected file type.
+    'raw' = any RAW, 'jpg' = any non-RAW, 'ext:nef' = that exact format,
+    'all'/empty = no filtering."""
     if ftype == 'raw':
         return [p for p in paths if is_raw(p)]
     if ftype == 'jpg':
         return [p for p in paths if not is_raw(p)]
+    if str(ftype).startswith('ext:'):
+        want = ftype[4:].lower()
+        return [p for p in paths
+                if Path(str(p)).suffix.lstrip('.').lower() == want
+                or (want == 'jpg' and Path(str(p)).suffix.lower() == '.jpeg')]
     return paths
 
 
@@ -286,18 +304,76 @@ def save_recent(folder):
         logger.warning(f"save recents fail: {e}")
 
 
-def detect_sd_cards():
+# DCIM folder-name hints -> camera brand label shown on the SD shortcut.
+_BRAND_HINTS = (('CANON', 'Canon'), ('EOS', 'Canon'),
+                ('NIKON', 'Nikon'), ('NCD', 'Nikon'), ('NCZ', 'Nikon'),
+                ('MSDCF', 'Sony'), ('SONY', 'Sony'),
+                ('FUJI', 'Fujifilm'), ('OLYMP', 'Olympus'), ('OMSYS', 'OM System'),
+                ('PANA', 'Panasonic'), ('LUMIX', 'Panasonic'),
+                ('PENTX', 'Pentax'), ('RICOH', 'Ricoh'), ('LEICA', 'Leica'),
+                ('GOPRO', 'GoPro'), ('APPLE', 'iPhone'), ('DJI', 'DJI'))
+
+
+def _brand_of(name):
+    up = name.upper()
+    for key, brand in _BRAND_HINTS:
+        if key in up:
+            return brand
+    return None
+
+
+def _has_images(d):
+    """True if the directory directly contains at least one supported image
+    (JPEG or RAW). Cheap: stops at the first hit."""
+    try:
+        for e in os.scandir(d):
+            if (e.is_file() and not e.name.startswith('.')
+                    and Path(e.name).suffix.lower() in IMG_EXTS):
+                return True
+    except OSError:
+        pass
+    return False
+
+
+def detect_sd_cards(volumes_root='/Volumes'):
+    """Find camera folders on mounted cards for ALL brands.
+    Every camera writes to DCIM/<something> (Canon 100CANON, Nikon 100NIKON,
+    Sony 100MSDCF, Fuji 100_FUJI, ...). We list each DCIM subfolder that
+    actually holds supported images (JPEG or RAW), look one level deeper for
+    cameras that nest by date, skip hidden/junk entries, and label the brand.
+    Returns [{'path': ..., 'brand': 'Nikon'|None}, ...]."""
     found = []
-    volumes = Path('/Volumes')
+    volumes = Path(volumes_root)
     if volumes.is_dir():
-        for vol in volumes.iterdir():
+        for vol in sorted(volumes.iterdir()):
             dcim = vol / 'DCIM'
-            if dcim.is_dir():
-                subdirs = [d for d in dcim.iterdir() if d.is_dir()]
-                for d in sorted(subdirs):
-                    found.append(str(d))
-                if not subdirs:
-                    found.append(str(dcim))
+            if not dcim.is_dir():
+                continue
+            added = False
+            try:
+                subs = sorted(d for d in dcim.iterdir() if d.is_dir()
+                              and not d.name.startswith('.')
+                              and d.name.upper() != 'MISC')
+            except OSError:
+                continue
+            for d in subs:
+                if _has_images(d):
+                    found.append({'path': str(d), 'brand': _brand_of(d.name)})
+                    added = True
+                    continue
+                # One level deeper — some cameras nest by date inside DCIM/<dir>.
+                try:
+                    deeper = sorted(x for x in d.iterdir() if x.is_dir()
+                                    and not x.name.startswith('.'))
+                except OSError:
+                    deeper = []
+                for dd in deeper:
+                    if _has_images(dd):
+                        found.append({'path': str(dd),
+                                      'brand': _brand_of(d.name) or _brand_of(dd.name)})
+                        added = True
+            if not added and _has_images(dcim):
+                found.append({'path': str(dcim), 'brand': None})
     return found
 
 
@@ -454,7 +530,7 @@ def run_cull(folder, strictness, adaptive, rescue_on):
                 photos.append({'name': it['name'], 'path': it['path'],
                                'thumb': thumb_url(it['path']), 'score': f"{it['region_s']:.0f}",
                                'badge': badge, 'badgeType': bt, 'tier': tier,
-                               'raw': is_raw(it['path']),
+                               'raw': is_raw(it['path']), 'fmt': fmt_of(it['path']),
                                'kept': tier != 'blurry', 'rejected': tier == 'blurry'})
             # Newest-processed first in the live grid (no scrolling to bottom).
             # Only the display order is reversed; `kept` stays in capture order
@@ -572,13 +648,14 @@ def run_dedup(folder, threshold, ftype='all', pair='both'):
             paths = list_images(folder)
             logger.info(f"Dedup: scanning full folder ({len(paths)} images) "
                         f"— no completed Cull for this folder")
-        # Honor the Cull file-type filter (RAW only / JPG only).
-        if ftype in ('raw', 'jpg'):
+        # Honor the Cull file-type filter (RAW / JPG / specific format).
+        if ftype and ftype != 'all':
             before = len(paths)
             paths = filter_ftype(paths, ftype)
-            logger.info(f"Dedup: {ftype.upper()}-only filter — "
+            lbl = ftype_label(ftype)
+            logger.info(f"Dedup: {lbl}-only filter — "
                         f"{len(paths)} of {before} photos continue")
-            s['status'] = (f"{ftype.upper()} only — {len(paths)} of {before} "
+            s['status'] = (f"{lbl} only — {len(paths)} of {before} "
                            f"photos continue to Dedup")
         # Collapse RAW+JPG pairs of the same frame (setting in Dedup panel).
         paths, npairs = collapse_raw_jpg_pairs(paths, pair)
@@ -587,7 +664,7 @@ def run_dedup(folder, threshold, ftype='all', pair='both'):
             s['status'] = f"{npairs} RAW+JPG pairs collapsed — kept {pair.upper()}"
         if not paths:
             s['status'] = ('No images' if ftype == 'all'
-                           else f'No {ftype.upper()} images to dedup')
+                           else f'No {ftype_label(ftype)} images to dedup')
             return
         dd = FastBatchDeduplicator(threshold=threshold)
         # Persist perceptual signatures so a repeat run on this folder is fast.
@@ -738,12 +815,13 @@ def run_rank(folder, ftype='all', pair='both'):
         else:
             paths = list_images(folder)
             chain = 'all photos'
-        # Honor the Cull file-type filter (RAW only / JPG only).
-        if ftype in ('raw', 'jpg'):
+        # Honor the Cull file-type filter (RAW / JPG / specific format).
+        if ftype and ftype != 'all':
             before = len(paths)
             paths = filter_ftype(paths, ftype)
-            chain += f' · {ftype.upper()} only ({len(paths)} of {before})'
-            logger.info(f"Rank: {ftype.upper()}-only filter — "
+            lbl = ftype_label(ftype)
+            chain += f' · {lbl} only ({len(paths)} of {before})'
+            logger.info(f"Rank: {lbl}-only filter — "
                         f"{len(paths)} of {before} photos continue")
         # Collapse RAW+JPG pairs too (covers ranking straight from Cull/folder).
         paths, npairs = collapse_raw_jpg_pairs(paths, pair)
@@ -752,7 +830,7 @@ def run_rank(folder, ftype='all', pair='both'):
             logger.info(f"Rank: {npairs} RAW+JPG pairs collapsed (kept {pair.upper()})")
         if not paths:
             s['status'] = ('No images to rank' if ftype == 'all'
-                           else f'No {ftype.upper()} images to rank')
+                           else f'No {ftype_label(ftype)} images to rank')
             return
         total = len(paths)
         s['total'] = total
@@ -1103,12 +1181,16 @@ document.querySelectorAll('.step').forEach(t=>t.onclick=()=>{
 renderSettings();
 
 /* cull filter chips */
-let cullFilter='all', cullType='all', rankFilter='all', pairMode='both';
+let cullFilter='all', cullType='all', rankFilter='all', pairMode='both', lastFmtSig='';
 function setupFilterBar(){
   const bar=document.getElementById('filterBar');
   if(currentStep==='cull'){
     const opts=[['all','All'],['sharp','Sharp'],['soft','Soft ★'],['blurry','Blurry']];
-    const types=[['all','All types'],['raw','RAW only'],['jpg','JPG only']];
+    // Per-format chips (NEF, CR2, ARW, ...) built from what's actually loaded.
+    const rawFmts=[...new Set(photos.filter(p=>p.raw).map(p=>p.fmt||'RAW'))].sort();
+    const types=[['all','All types'],['raw','RAW only'],['jpg','JPG only'],
+      ...(rawFmts.length>1?rawFmts.map(f=>['ext:'+f.toLowerCase(),f+' only']):[])];
+    if(!types.some(([k])=>k===cullType))cullType='all';
     bar.style.display='flex';
     bar.innerHTML=opts.map(([k,l])=>`<button class="chip${k===cullFilter?' active':''}" data-f="${k}">${l}</button>`).join('')
       +`<span class="chip-sep"></span>`
@@ -1138,7 +1220,9 @@ document.getElementById('gallery').innerHTML=emptyHTML(currentStep);  // step ex
 
 /* shortcuts */
 function loadShortcuts(){fetch('/api/shortcuts').then(r=>r.json()).then(d=>{
-  let h='';(d.sd||[]).forEach(p=>h+=`<button class="shortcut" data-p="${p}"><span class="tag sd">SD</span>${p.split('/').slice(-2).join('/')}</button>`);
+  let h='';(d.sd||[]).forEach(o=>{const p=(typeof o==='string')?o:o.path;
+    const br=(o&&o.brand)?(' · '+o.brand):'';
+    h+=`<button class="shortcut" data-p="${p}"><span class="tag sd">SD${br}</span>${p.split('/').slice(-2).join('/')}</button>`;});
   (d.recent||[]).slice(0,4).forEach(p=>h+=`<button class="shortcut" data-p="${p}"><span class="tag recent">RECENT</span>${p.split('/').slice(-2).join('/')}</button>`);
   if(d.rawpy===false)h=`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;`
     +`padding:8px 10px;font-size:11px;line-height:1.5;margin-bottom:6px">⚠️ <b>RAW support off</b> — `
@@ -1173,8 +1257,10 @@ function startStep(step){
   const opt=document.getElementById('opt');
   const ad=document.getElementById('cAdaptive'),rs=document.getElementById('cRescue');
   // Carry the Cull file-type filter (RAW only / JPG only) into Dedup & Rank.
-  if(step!=='cull'&&cullType!=='all')
-    toast('Continuing with '+(cullType==='raw'?'RAW':'JPG')+' files only — switch the Cull filter to "All types" to include everything','');
+  if(step!=='cull'&&cullType!=='all'){
+    const tl=cullType==='raw'?'RAW':cullType==='jpg'?'JPG':cullType.replace('ext:','').toUpperCase();
+    toast('Continuing with '+tl+' files only — switch the Cull filter to "All types" to include everything','');
+  }
   fetch('/api/run/'+step,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({folder,opt:opt?parseFloat(opt.value):0,
       adaptive:ad?ad.checked:true, rescue:rs?rs.checked:true,
@@ -1411,11 +1497,16 @@ function cullCardHtml(p,idx){const path=String(p.path).replace(/"/g,'&quot;');
   return `<div class="photo-card ${cls}" data-i="${idx}" data-path="${path}" data-tier="${p.tier}">
     <button class="badge ${p.badgeType} badge-tier" data-path="${path}" data-tier="${p.tier}" title="Click to change: Sharp → Soft → Blurry">⇄ ${p.badge}</button>
     <img class="photo-img" src="${p.thumb}" loading="lazy" decoding="async">
-    <div class="photo-info"><div class="pi-row"><span class="photo-name">${p.name}</span><span class="ftype${p.raw?'':' jpg'}">${p.raw?'RAW':'JPG'}</span></div><div class="photo-score">${p.score}</div></div></div>`;}
+    <div class="photo-info"><div class="pi-row"><span class="photo-name">${p.name}</span><span class="ftype${p.raw?'':' jpg'}">${p.fmt||(p.raw?'RAW':'JPG')}</span></div><div class="photo-score">${p.score}</div></div></div>`;}
 function renderCullStep(items){
   photos=items;
+  // Rebuild the type chips if a new RAW format appeared during the run.
+  const fSig=[...new Set(items.filter(p=>p.raw).map(p=>p.fmt||'RAW'))].sort().join(',');
+  if(fSig!==lastFmtSig){lastFmtSig=fSig;setupFilterBar();}
   cullView=items.filter(p=>(cullFilter==='all'||p.tier===cullFilter)
-    &&(cullType==='all'||(cullType==='raw'?!!p.raw:!p.raw)));
+    &&(cullType==='all'||(cullType==='raw'?!!p.raw
+      :cullType==='jpg'?!p.raw
+      :('ext:'+String(p.fmt||'').toLowerCase())===cullType)));
   const g=document.getElementById('gallery');
   if(!cullView.length){g.innerHTML=EMPTY;lastCullSig='';lastStep=currentStep;document.getElementById('sShowing').textContent=0;return;}
   const sig=cullView.map(p=>p.path+':'+p.tier).join('|');
