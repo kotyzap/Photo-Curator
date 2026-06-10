@@ -178,8 +178,9 @@
 
 <nav>
   <div class="wrap nav-in">
-   <a href="https://paolocortezcz.github.io/Photo-Curator/"> <div class="brand"><a href="https://paolocortezcz.github.io/Photo-Curator/">🎞️ Photo Curator <small>v4.0</small></a></div> 
+    <div class="brand"><a href="https://paolocortezcz.github.io/Photo-Curator/">🎞️ Photo Curator <small>v6.0</small></a></div>
     <div class="nav-links">
+      <a href="#raw">RAW</a>
       <a href="#features">Features</a>
       <a href="#metrics">How it scores</a>
       <a href="#privacy">Privacy</a>
@@ -196,14 +197,15 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div class="copy">
-      <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source</span>
+      <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source · 🆕 v6.0</span>
       <h1>📸 Come home with 3,000 photos.<br>Leave with your <span style="white-space:nowrap"><span class="pop">50 best</span> ✨.</span></h1>
-      <p class="lead">Point Photo Curator at a folder of shots and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own Mac. 🍏</p>
+      <p class="lead">Point Photo Curator at a folder of shots — JPEGs or <b>RAW</b> (CR2 · CR3 · NEF · ARW · DNG &amp; more) — and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own Mac. 🍏</p>
       <div class="cta">
         <a class="btn btn-primary" href="#download">⬇ Download for Mac</a>
         <a class="btn btn-ghost" href="#features">See how it works</a>
       </div>
       <div class="trust">
+        <span><i class="dot"></i> <b>RAW</b> supported</span>
         <span><i class="dot"></i> <b>100%</b> local</span>
         <span><i class="dot"></i> Photos never uploaded</span>
         <span><i class="dot"></i> No accounts · no tracking</span>
@@ -221,7 +223,7 @@
 
   <div class="wrap">
     <div class="pipe">
-      <div class="step"><div class="num">STEP 1</div><h3>✂️ Cull</h3><p>Out-of-focus shots flagged by real, contrast-aware sharpness — haze and night skies aren't mistaken for blur.</p></div>
+      <div class="step"><div class="num">STEP 1</div><h3>✂️ Cull</h3><p>Out-of-focus shots flagged by real, contrast-aware sharpness — haze and night skies aren't mistaken for blur. Shoot RAW+JPG? Filter to RAW only or JPG only.</p></div>
       <div class="step"><div class="num">STEP 2</div><h3>🧬 Dedup</h3><p>Burst sequences collapse to one frame. The sharpest survivor is kept, labelled “Best of N.”</p></div>
       <div class="step"><div class="num">STEP 3</div><h3>🏆 Rank</h3><p>Each keeper scored on composition, lighting, focus, colour and contrast, then sorted to your TOP N.</p></div>
     </div>
@@ -247,6 +249,45 @@
 </section>
 
 <!-- FEATURES -->
+<!-- RAW SUPPORT (v6.0) -->
+<section id="raw">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">🆕 New in v6.0</span>
+      <h2>RAW files, first-class.</h2>
+      <p class="muted">Point it at your RAW shoot — no conversion step, no detours through Lightroom. Powered by LibRaw.</p>
+    </div>
+    <div class="duo">
+      <div class="card reveal">
+        <div class="pad">
+          <h3>📷 Every major RAW format</h3>
+          <p>Canon <b>CR2 / CR3</b>, Nikon <b>NEF</b>, Sony <b>ARW</b>, Adobe <b>DNG</b>, Fuji RAF, Olympus ORF, Panasonic RW2, Pentax PEF and more. Fast by design: the full-size JPEG preview your camera embeds in each RAW is used for thumbnails, analysis and display — EXIF, GPS and orientation included — with a half-size RAW develop as fallback. Exports always copy the <b>untouched original</b>.</p>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="pad">
+          <h3>🧩 Shoot RAW+JPG? Covered.</h3>
+          <p>Cull gets <b>file-type filter chips</b> — All types · RAW only · JPG only, plus per-format chips (CR2 only, NEF only…) when a folder mixes brands — and every card wears its format tag. A Dedup setting collapses same-frame <b>RAW+JPG pairs</b> to one keeper (keep both / keep RAW / keep JPG), and your choice carries through Dedup and Rank.</p>
+        </div>
+      </div>
+    </div>
+    <div class="duo" style="margin-top:28px">
+      <div class="card reveal">
+        <div class="pad">
+          <h3>💾 SD cards, every brand</h3>
+          <p>Insert a card and the sidebar finds your shots no matter who made the camera: Canon <code>100CANON</code>, Nikon <code>100NIKON</code>, Sony <code>100MSDCF</code>, Fuji, Olympus, Panasonic, GoPro, DJI… Date-nested DCIM layouts are handled too, empty folders are skipped, and each shortcut is labelled with the detected brand — "SD · Nikon".</p>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="pad">
+          <h3>🔒 Still 100% local</h3>
+          <p>RAW decoding runs on your machine like everything else — no uploads, no cloud APIs. Running from source? RAW needs one extra library: <code>pip install rawpy</code>. Without it the app keeps working JPEG-only and says so in the sidebar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="features" class="alt">
   <div class="wrap">
     <div class="section-head reveal">
@@ -262,6 +303,7 @@
         <p class="muted">Sharpness is measured as <code>var(Laplacian) / var(image)</code> on a normalized copy — so it judges <i>real</i> focus, not contrast. Big skies, haze and night scenes are kept, not punished.</p>
         <ul>
           <li>Sorted into <b>Sharp · Soft (recoverable) · Blurry</b></li>
+          <li><b>RAW / JPG filter chips</b> — RAW only, JPG only, or a specific format (CR2, NEF, ARW…)</li>
           <li>One-click <b>Sharp ⇄ Blurry</b> override on any frame</li>
           <li>Adjustable strictness; blurry shots move only when <b>you</b> press the button</li>
         </ul>
@@ -278,6 +320,7 @@
         <ul>
           <li>The <b>sharpest</b> frame of each group is kept</li>
           <li>Labelled <b>“Best of N”</b> so you see how many it stood in for</li>
+          <li><b>RAW+JPG pairs</b> of the same frame can collapse to one — keep RAW or keep JPG</li>
           <li>Vectorized and cached — big cards stay fast</li>
         </ul>
       </div>
@@ -367,6 +410,7 @@
     <div class="reveal">
     <table class="how">
       <tr><th style="width:120px">Step</th><th style="width:280px">Metric</th><th>What it does</th></tr>
+      <tr><td><b>RAW decode</b></td><td>Embedded JPEG preview via rawpy/LibRaw (fallback: half-size demosaic)</td><td>~50× faster than developing the sensor data; EXIF, GPS and orientation preserved. Exports copy the original RAW.</td></tr>
       <tr><td><b>Cull</b></td><td><code>var(Laplacian) / var(image)</code> on a 1024px copy</td><td>Resolution-independent sharpness that normalizes out contrast, so haze ≠ blur. Threshold adjustable.</td></tr>
       <tr><td><b>Dedup</b></td><td>192-bit perceptual hash (avg + dual dHash) + ORB confirm</td><td>Global clustering; EXIF-timed bursts get a relaxed bar; the sharpest frame of each group survives.</td></tr>
       <tr><td><b>Rank</b></td><td>Weighted focus / lighting / contrast / colour / composition</td><td>Per-photo radar plus a TOP-N average profile. Weights are yours to tune.</td></tr>
@@ -435,7 +479,7 @@ cd photo-curator-4
       <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
 <pre><span class="d"># what the Offline package shows on launch</span>
 <span class="d">======================================</span>
-        📸  <span class="b">Photo Curator v4.0</span>
+        📸  <span class="b">Photo Curator v6.0</span>
 <span class="d">======================================</span>
 
 Using Python: /usr/bin/python3
