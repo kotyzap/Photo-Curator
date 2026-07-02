@@ -1,4 +1,6 @@
-# 📸 Photo Curator
+# 📸 Photo Curator v6.0
+
+## 📸 Come home with 3,000 photos - Leave with your 50 best ✨
 
 **v6.0** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs — or **RAW files** (Canon CR2/CR3, Nikon NEF, Sony ARW, DNG, Fuji RAF, Olympus ORF, Panasonic RW2 and more) — and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
 
