@@ -1,10 +1,12 @@
 # 📸 Photo Curator v6.0
 
 ## 📸 Come home with 3,000 photos - Leave with your 50 best ✨
-
+<div align="center">
+<img width="800" height="450" alt="PhotoCuratorv3 4-gif" src="https://github.com/user-attachments/assets/932e9b3d-4707-45b9-8a41-9d275289521d" />
+</div>
 **v6.0** · A local, browser-based tool for culling and ranking large photo libraries. Point it at a folder of JPEGs — or **RAW files** (Canon CR2/CR3, Nikon NEF, Sony ARW, DNG, Fuji RAF, Olympus ORF, Panasonic RW2 and more) — and it walks you through three steps — **drop the blurry ones, collapse burst duplicates, and surface your best shots** — all running entirely on your own machine. Nothing is ever uploaded anywhere.
 
-Built for photographers who come home from a trip with a few thousand frames and want the keepers fast.
+Built by photographer for photographers who come home from a trip with a few thousand frames and want the keepers fast.
 
 ![pipeline: Cull → Dedup → Rank](https://img.shields.io/badge/pipeline-Cull%20→%20Dedup%20→%20Rank-blue)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue)
