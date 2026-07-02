@@ -58,6 +58,8 @@ A long shoot leaves you with thousands of near-identical frames, blurred misfire
 
 - **3 · Rank** — scores each photo on composition, lighting, focus, color, and contrast, then shows your **TOP N** with a per-photo hexagonal radar chart and a TOP-N average "metric profile". Ranking shows live per-photo progress with **percentage, elapsed time, and ETA**. If you skip Dedup, ranking folds the clustering in automatically so a one-click run still gives a burst-free result.
 
+<img width="2180" height="962" alt="Rank-Japan" src="https://github.com/user-attachments/assets/95488483-cdd1-46c7-924a-822569182a7f" />
+
 - **📱 Phone Background selector** — a single tap marks any top shot as a phone wallpaper. **Export Phone BG** writes a `PhoneBG/` folder with `Original/` (full-res copies) and `Wallpaper_19.5x9/` (each photo center-cropped to **1290×2796, 19.5:9** — pixel-perfect on iPhone and covering nearly all Android).
 
 - **⚡ God Mode** — one button runs the whole pipeline automatically: **Cull → Dedup → Rank**, landing on your ranked TOP N *without moving any files*, so you still review and move rejects yourself.
