@@ -115,7 +115,7 @@ Photo Curator also curates your **RAW files** alongside JPEGs:
 
 No Python, no terminal, no internet needed — everything is bundled (RAW and HEIC support included).
 
-➡️ **[Download · Apple Silicon (Proton Drive)](https://drive.proton.me/urls/E3KZNWRZRC#keyO4AK7vjMA)** — ~88 MB · M1–M6 · macOS 11+
+➡️ **[Download · Apple Silicon](https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip)** — ~76 MB · M1–M6 · macOS 11+
 
 Unzip, keep the **PhotoCurator** folder together, right-click **"Start Photo Curator.command"** → **Open** (first time only) — your browser opens automatically.
 
@@ -123,7 +123,7 @@ Unzip, keep the **PhotoCurator** folder together, right-click **"Start Photo Cur
 
 Self-contained Python 3.11 and every library included — nothing is installed into Windows.
 
-➡️ **[Download · Windows x64](TODO-WINDOWS-DOWNLOAD-URL)** — ~95 MB · Windows 10 / 11 (64-bit)
+➡️ **[Download · Windows x64](https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip)** — ~86 MB · Windows 10 / 11 (64-bit)
 
 Unzip the folder, keep it together, double-click **"Start Photo Curator.bat"**. SmartScreen may ask once: *More info → Run anyway*.
 
