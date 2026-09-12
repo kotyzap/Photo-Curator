@@ -4,635 +4,666 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Photo Curator — Cull. Dedup. Rank.</title>
-<style>
-  :root{
-    --bg:#f7f8fb; --bg-soft:#ffffff; --panel:#ffffff; --ink:#0f1726; --ink-soft:#475067;
-    --line:rgba(15,23,38,.10); --line-strong:rgba(15,23,38,.16);
-    --brand:#2563eb; --brand-deep:#1f3a6e; --accent:#e8632a; --accent-soft:#fff1ea;
-    --green:#16a34a; --amber:#f59e0b; --red:#ef4444;
-    --shadow:0 18px 50px -20px rgba(15,23,38,.28); --shadow-soft:0 8px 30px -16px rgba(15,23,38,.25);
-    --radius:18px; --maxw:1120px;
-    --grad:linear-gradient(120deg,#2563eb,#4f46e5 55%,#e8632a);
-  }
-  html[data-theme="dark"]{
-    --bg:#0b0f17; --bg-soft:#0f1521; --panel:#131a28; --ink:#eef2f9; --ink-soft:#9aa6bd;
-    --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
-    --brand:#60a5fa; --brand-deep:#1b2740; --accent:#ff7a43; --accent-soft:#2a1409;
-    --shadow:0 24px 60px -24px rgba(0,0,0,.7); --shadow-soft:0 10px 34px -18px rgba(0,0,0,.6);
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--ink);
-    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
-  a{color:var(--brand);text-decoration:none}
-  img{max-width:100%;display:block}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
-  h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0 0 .4em}
-  h2{font-size:clamp(26px,3.4vw,40px)}
-  .muted{color:var(--ink-soft)}
-  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
-
-  /* NAV */
-  nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(160%) blur(12px);
-    background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)}
-  .nav-in{display:flex;align-items:center;gap:18px;height:64px}
-  .brand{font-weight:800;font-size:18px;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
-  .brand small{font-weight:600;color:var(--ink-soft);font-size:12px;border:1px solid var(--line-strong);padding:1px 7px;border-radius:999px}
-  .nav-links{display:flex;gap:22px;margin-left:auto}
-  .nav-links a{color:var(--ink-soft);font-weight:600;font-size:14.5px}
-  .nav-links a:hover{color:var(--ink)}
-  .nav-actions{display:flex;align-items:center;gap:10px;margin-left:18px}
-  .iconbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-strong);background:var(--panel);
-    color:var(--ink);cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.2s}
-  .iconbtn:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft)}
-  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;
-    padding:11px 18px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:.2s;white-space:nowrap}
-  .btn-primary{background:var(--grad);color:#fff;box-shadow:var(--shadow-soft)}
-  .btn-primary:hover{transform:translateY(-2px);filter:saturate(1.08)}
-  .btn-ghost{background:var(--panel);color:var(--ink);border-color:var(--line-strong)}
-  .btn-ghost:hover{transform:translateY(-2px)}
-  .btn-kofi{background:var(--accent);color:#fff}
-  @media(max-width:820px){.nav-links{display:none}}
-
-  /* HERO */
-  .hero{position:relative;overflow:hidden;padding:72px 0 36px}
-  .hero:before{content:"";position:absolute;inset:-30% -10% auto -10%;height:560px;z-index:-1;
-    background:radial-gradient(60% 60% at 20% 10%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 70%),
-               radial-gradient(50% 50% at 90% 0%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 70%);
-    filter:blur(8px)}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
-  .hero h1{font-size:clamp(34px,5vw,60px);font-weight:850}
-  .hero h1 .pop{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .lead{font-size:clamp(17px,1.7vw,20px);color:var(--ink-soft);max-width:34ch;margin:.2em 0 1.4em}
-  .cta{display:flex;gap:12px;flex-wrap:wrap}
-  .hero-dl{display:flex;gap:8px;flex-wrap:nowrap;margin-top:4px}
-  .btn-plat{flex:1 1 0;min-width:0;justify-content:center;gap:6px;padding:12px 10px;font-size:13.5px;white-space:nowrap}
-  .btn-plat .plat-size{font-weight:600;font-size:11.5px;opacity:.72}
-  .hero-dl-note{margin:10px 0 0;font-size:12.5px;color:var(--ink-soft)}
-  .hero .cta{margin-top:18px}
-  @media(max-width:560px){.hero-dl{flex-wrap:wrap}.btn-plat{flex:1 1 100%}}
-  .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:13.5px;color:var(--ink-soft)}
-  .trust b{color:var(--ink)}
-  .trust span{display:inline-flex;align-items:center;gap:7px}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 22%,transparent)}
-  .video-embed{position:relative;width:100%;max-width:860px;margin:28px auto 0;
-    aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;
-    box-shadow:var(--shadow);border:1px solid var(--line)}
-  .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .video-row{display:flex;gap:48px;align-items:center}
-  .video-col{flex:1 1 55%;min-width:0}
-  .text-col{flex:1 1 45%;min-width:0}
-  .video-col .video-embed{margin:18px 0 0;max-width:none}
-  @media(max-width:820px){.video-row{flex-direction:column;gap:28px}}
-  .hero-art{position:relative}
-  .privacy-note{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    padding:14px 16px;margin-bottom:16px;font-size:13.5px;line-height:1.5;color:var(--muted)}
-  .privacy-note b{color:var(--text)}
-  .privacy-note code{background:var(--line);padding:1px 5px;border-radius:5px;font-size:.92em}
-  .hero-art img{border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
-  .hero-badge{position:absolute;left:-14px;bottom:-14px;background:var(--panel);border:1px solid var(--line-strong);
-    border-radius:14px;padding:10px 14px;box-shadow:var(--shadow-soft);font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
-  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;gap:30px}.lead{max-width:none}}
-
-  /* PIPELINE STRIP */
-  .pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:38px 0 8px}
-  .pipe .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow-soft);position:relative}
-  .pipe .num{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--brand)}
-  .pipe h3{font-size:19px;margin:.3em 0 .15em}
-  .pipe p{margin:0;font-size:14px;color:var(--ink-soft)}
-  .pipe .step:not(:last-child):after{content:"→";position:absolute;right:-19px;top:50%;transform:translateY(-50%);
-    color:var(--ink-soft);font-weight:700;z-index:2}
-  @media(max-width:760px){.pipe{grid-template-columns:1fr}.pipe .step:after{display:none}}
-
-  /* SECTIONS */
-  section{padding:62px 0}
-  .section-head{max-width:680px;margin-bottom:34px}
-  .section-head h2{margin-top:.2em}
-  .feature{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin:0 0 18px}
-  .feature.flip .copy{order:2}
-  .feature .shot img{border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow)}
-  .feature .tag{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;letter-spacing:.06em;
-    text-transform:uppercase;color:#fff;padding:6px 12px;border-radius:999px;margin-bottom:14px}
-  .feature ul{list-style:none;padding:0;margin:16px 0 0}
-  .feature li{position:relative;padding-left:26px;margin:9px 0;color:var(--ink-soft)}
-  .feature li:before{content:"";position:absolute;left:0;top:9px;width:14px;height:14px;border-radius:4px;background:var(--brand);opacity:.85}
-  .feature li b{color:var(--ink)}
-  @media(max-width:880px){.feature{grid-template-columns:1fr;gap:24px}.feature.flip .copy{order:0}}
-
-  .alt{background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-
-  /* SPLIT CARDS (exif / phone) */
-  .duo{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-soft);display:flex;flex-direction:column}
-  .card .pad{padding:24px 26px}
-  .card h3{font-size:21px;margin-bottom:.25em}
-  .card p{margin:0;color:var(--ink-soft);font-size:15px}
-  .card .media{background:#0b0f17;display:grid;place-items:center}
-  .card .media img{width:100%}
-  .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-  @media(max-width:1040px){.trio{grid-template-columns:1fr 1fr}}
-  @media(max-width:820px){.duo{grid-template-columns:1fr}.trio{grid-template-columns:1fr}}
-
-  /* GODMODE */
-  .godmode{background:var(--brand-deep);color:#fff;border-radius:24px;padding:46px;position:relative;overflow:hidden}
-  html[data-theme="light"] .godmode{background:linear-gradient(120deg,#16224a,#243b73)}
-  .godmode:before{content:"⚡";position:absolute;right:24px;top:-10px;font-size:160px;opacity:.10}
-  .godmode h2{color:#fff}
-  .godmode p{color:#cdd7ee;max-width:60ch;margin:0 auto}
-  .godmode .center{text-align:center;max-width:760px;margin:0 auto}
-  .flow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
-  .flow span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px}
-
-  /* PRIVACY */
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow-soft)}
-  .pcard .ic{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:20px;margin-bottom:12px}
-  .pcard h3{font-size:17px;margin-bottom:.3em}
-  .pcard p{margin:0;font-size:14px;color:var(--ink-soft)}
-  @media(max-width:820px){.grid3{grid-template-columns:1fr}}
-
-  /* HOW TABLE */
-  .how{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-  .how th,.how td{text-align:left;padding:16px 20px;border-bottom:1px solid var(--line);vertical-align:top}
-  .how th{background:var(--bg-soft);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
-  .how td b{color:var(--ink)}
-  .how code{background:var(--bg-soft);border:1px solid var(--line);padding:2px 7px;border-radius:7px;font-size:13px}
-  .how tr:last-child td{border-bottom:none}
-
-  /* DOWNLOAD */
-  .dl{display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center}
-  .steps{counter-reset:s;list-style:none;padding:0;margin:18px 0 0}
-  .steps li{counter-increment:s;position:relative;padding:12px 0 12px 48px;border-bottom:1px dashed var(--line)}
-  .steps li:before{content:counter(s);position:absolute;left:0;top:11px;width:32px;height:32px;border-radius:50%;
-    background:var(--grad);color:#fff;font-weight:800;display:grid;place-items:center}
-  .steps li:last-child{border-bottom:none}
-  .terminal{background:#0b0f17;border:1px solid rgba(255,255,255,.12);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
-  .terminal .bar{display:flex;gap:7px;padding:12px 14px;background:#161d2b;border-bottom:1px solid rgba(255,255,255,.08)}
-  .terminal .bar i{width:12px;height:12px;border-radius:50%;display:block}
-  .terminal pre{margin:0;padding:18px 20px;color:#c8d2e6;font-size:13px;line-height:1.6;white-space:pre-wrap}
-  .terminal .g{color:#7ee0a2}.terminal .b{color:#7cb6ff}.terminal .o{color:#ffb27a}.terminal .d{color:#6b7589}
-  @media(max-width:820px){.dl{grid-template-columns:1fr}}
-
-  footer{border-top:1px solid var(--line);padding:40px 0 56px;color:var(--ink-soft);font-size:14px}
-  .foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
-  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-  .badges span{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--panel)}
-  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
-  .dl-card .pad{display:flex;flex-direction:column;height:100%}
-  .dl-card .steps{flex:1 1 auto}
-  .dl-card .cta{margin-top:auto}
-  .dl-logo{width:20px;height:20px;flex:none;fill:currentColor}
-  .dl-head{margin-bottom:8px}
-  .dl-head h3{margin:0;display:flex;align-items:center;gap:9px;font-size:19px}
-  .dl-meta{display:flex;align-items:center;gap:8px;margin-top:8px;min-height:24px}
-  .dl-rec{background:var(--grad);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
-  .dl-size{font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:3px 9px;border-radius:999px}
-  .src-strip{margin-top:20px}
-  .src-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-  .src-copy{flex:1 1 260px;min-width:240px}
-  .src-copy h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
-  .src-size{font-size:11px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:2px 8px;border-radius:999px}
-  .src-copy p{margin:0;font-size:12.5px;line-height:1.55}
-  .src-code{flex:1 1 320px;min-width:260px;background:#0b0f17;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 13px;
-            font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;color:#c8d2e6;overflow-x:auto}
-  .src-code code{color:inherit;background:none;padding:0;white-space:pre}
-  .src-code .c{color:#7cb6ff}
-  .src-btn{flex:0 0 auto;white-space:nowrap}
-  @media(max-width:720px){.src-row{gap:14px}.src-btn{width:100%;justify-content:center}}
-  .reveal.in{opacity:1;transform:none}
+<meta name="description" content="Point Photo Curator at a folder of JPEG, PNG, iPhone HEIC or RAW files. It drops the blurry frames, collapses burst duplicates and surfaces your keepers. 100% local, open source, MIT.">
+<meta property="og:title" content="Photo Curator — Cull. Dedup. Rank.">
+<meta property="og:description" content="Come home with 3,000 photos. Leave with your 50 best. 100% local, offline, open source.">
+<meta property="og:image" content="https://kotyzap.github.io/Photo-Curator/assets/hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/0a625c7f.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/ba2c6c74.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/6ea588c3.woff2") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/a44e3b82.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/d21add99.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/5b243c91.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/0a625c7f.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/ba2c6c74.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/6ea588c3.woff2") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/a44e3b82.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/d21add99.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/5b243c91.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/a5bbf4f0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/e92a27fa.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/1105b93a.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/a5bbf4f0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/e92a27fa.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/1105b93a.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/a5bbf4f0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/e92a27fa.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/1105b93a.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/a5bbf4f0.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/e92a27fa.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/1105b93a.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 </style>
+<style>
+:root{--bg:#121110;--bg2:#1a1917;--panel:#201e1c;--line:#302d2a;--ink:#f1ede8;--ink2:#a9a29a;--ink3:#7a746d;--acc:oklch(0.75 0.15 25);--acc-ink:#1a0d08;--code:#0d0c0b}
+[data-theme="light"]{--bg:#f6f3ef;--bg2:#efebe5;--panel:#ffffff;--line:#e2dcd4;--ink:#171411;--ink2:#5d5751;--ink3:#8a8279;--acc:oklch(0.62 0.17 25);--acc-ink:#fff8f4;--code:#1a1715}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+*{box-sizing:border-box}
+a{color:var(--ink);text-decoration:none}a:hover{color:var(--acc)}
+h1,h2,h3,p{margin:0}
+</style>
+<style>.h0:hover{filter:brightness(1.08);color:var(--acc-ink)}
+.h1:hover{border-color:var(--ink);color:var(--ink)}
+.h2:hover{border-color:var(--ink);color:var(--ink)}
+.h3:hover{background:var(--acc);color:var(--acc-ink)}
+.h4:hover{background:var(--acc);color:var(--acc-ink)}
+.h5:hover{background:var(--acc);color:var(--acc-ink)}
+.h6:hover{border-color:var(--ink)}</style>
 </head>
 <body>
+<div style="min-height:100vh;background:var(--bg);color:var(--ink)">
 
-<nav>
-  <div class="wrap nav-in">
-    <div class="brand"><a href="https://kotyzap.github.io/Photo-Curator/">🎞️ Photo Curator <small>v7.0</small></a></div>
-    <div class="nav-links">
-      <a href="#heic">HEIC</a>
-      <a href="#raw">RAW</a>
-      <a href="#features">Features</a>
-      <a href="#metrics">How it scores</a>
-      <a href="#privacy">Privacy</a>
-      <a href="#download">Download</a>
-    </div>
-    <div class="nav-actions">
-      <button class="iconbtn" id="themeBtn" title="Toggle light / dark">🌙</button>
-      <a class="btn btn-kofi" href="https://ko-fi.com/B3S720JCU6" target="_blank">☕ Ko-fi</a>
-    </div>
-  </div>
-</nav>
-
-<!-- HERO -->
-<header class="hero">
-  <div class="wrap hero-grid">
-    <div class="copy">
-      <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source · 🆕 v7.0</span>
-      <h1>📸 Come home with 3,000 photos.<br>Leave with your <span style="white-space:nowrap"><span class="pop">50 best</span> ✨.</span></h1>
-      <p class="lead">Point Photo Curator at a folder of shots — <b>JPEG</b>, <b>PNG</b>, iPhone <b>HEIC</b> or <b>RAW</b> (CR2 · CR3 · NEF · ARW · DNG &amp; more) — and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own machine. 🍏🪟</p>
-      <div class="hero-dl">
-        <a class="btn btn-primary btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" rel="noopener">⬇ 🍏 Mac ‧ M1–M6 <span class="plat-size">76 MB</span></a>
-        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" rel="noopener">⬇ 🪟 Windows <span class="plat-size">86 MB</span></a>
-        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" rel="noopener">⬇ 🐧 Linux <span class="plat-size">124 MB</span></a>
-      </div>
-      <p class="hero-dl-note">Offline bundles — nothing to install. <a href="#download">Install steps, requirements &amp; run from source ↓</a></p>
-      <div class="cta">
-        <a class="btn btn-ghost" href="#features">See how it works</a>
-      </div>
-      <div class="trust">
-        <span><i class="dot"></i> <b>RAW</b> + <b>HEIC</b> supported</span>
-        <span><i class="dot"></i> <b>100%</b> local</span>
-        <span><i class="dot"></i> Photos never uploaded</span>
-        <span><i class="dot"></i> No accounts · no tracking</span>
-        <span><i class="dot"></i> MIT licensed</span>
-      </div>
-    </div>
-    <div class="hero-art">
-      <div class="privacy-note">
-        <b>🔒 100% local.</b> Photo Curator runs a small server bound to <code>127.0.0.1</code> and opens a browser tab against it. No data leaves your machine — no uploads, no telemetry, no external APIs. The only outbound requests are optional <a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> map tiles (GPS view) and a Ko-fi badge, loaded by your browser, not the app. The map library itself is bundled — no CDN.
-      </div>
-      <img src="PhotoCuratorv3.4-ezgif.com-video-to-gif-converter.gif" alt="Photo Curator in action — culling, dedup and ranking">
-      <div class="hero-badge">📸 See it in action</div>
-    </div>
-  </div>
-
-  <div class="wrap">
-    <div class="pipe">
-      <div class="step"><div class="num">STEP 1</div><h3>✂️ Cull</h3><p>Out-of-focus shots flagged by real, contrast-aware sharpness — haze and night skies aren't mistaken for blur. Shoot RAW+JPG? Filter to RAW only or JPG only.</p></div>
-      <div class="step"><div class="num">STEP 2</div><h3>🧬 Dedup</h3><p>Burst sequences collapse to one frame. The sharpest survivor is kept, labelled “Best of N.”</p></div>
-      <div class="step"><div class="num">STEP 3</div><h3>🏆 Rank</h3><p>Each keeper scored on composition, lighting, focus, colour and contrast, then sorted to your TOP N.</p></div>
+<!-- NAV -->
+<header style="position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:color-mix(in oklab,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)">
+  <div style="max-width:1200px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:-0.01em">
+      <span style="width:26px;height:26px;border-radius:50%;border:2px solid var(--acc);display:grid;place-items:center"><span style="width:10px;height:10px;border-radius:50%;background:var(--acc)"></span></span>
+      Photo Curator <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);font-weight:400">v7.0</span>
+    </a>
+    <nav style="display:flex;gap:22px;font-size:14px;color:var(--ink2);flex:1;flex-wrap:wrap">
+      <a href="#steps" style="color:var(--ink2)">Pipeline</a><a href="#formats" style="color:var(--ink2)">RAW &amp; HEIC</a><a href="#privacy" style="color:var(--ink2)">Privacy</a><a href="#download" style="color:var(--ink2)">Download</a>
+    </nav>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme" style="height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink2);font:500 13px 'JetBrains Mono',monospace;cursor:pointer">Dark</button>
+      <a href="https://ko-fi.com/B3S720JCU6" style="height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--line);display:flex;align-items:center;font-size:13px;color:var(--ink2)">Ko-fi</a>
     </div>
   </div>
 </header>
 
-<!-- VIDEO + PROBLEM -->
-<section id="video">
-  <div class="wrap video-row reveal">
-    <div class="video-col">
-      <span class="eyebrow">Watch the demo</span>
-      <h2>See it run, end to end.</h2>
-      <div class="video-embed">
-        <iframe src="https://www.youtube-nocookie.com/embed/mR-YvzftQAU?si=VC3glAABWUj0Uxup" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-      </div>
+<!-- HERO -->
+<section id="top" style="position:relative;overflow:hidden;border-bottom:1px solid var(--line)">
+  <img src="assets/hero.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.55;filter:saturate(0.85)">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,color-mix(in oklab,var(--bg) 55%,transparent) 0%,color-mix(in oklab,var(--bg) 35%,transparent) 45%,var(--bg) 100%)"></div>
+  <div style="position:relative;max-width:1200px;margin:0 auto;padding:110px 24px 72px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);margin-bottom:28px">
+      <span style="padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:color-mix(in oklab,var(--bg) 70%,transparent)">100% local</span>
+      <span style="padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:color-mix(in oklab,var(--bg) 70%,transparent)">Offline</span>
+      <span style="padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:color-mix(in oklab,var(--bg) 70%,transparent)">Open source · MIT</span>
+      <span style="padding:6px 10px;border:1px solid var(--acc);color:var(--acc);border-radius:999px;background:color-mix(in oklab,var(--bg) 70%,transparent)">New: HEIC in v7.0</span>
     </div>
-    <div class="text-col">
-      <span class="eyebrow">The problem</span>
-      <h2>A long shoot is mostly noise.</h2>
-      <p class="muted" style="font-size:18px">Thousands of near-identical frames, blurred misfires, and a handful of genuine keepers buried in the middle. Going through them by hand is slow and easy to get wrong. Photo Curator does the first pass in seconds per hundred photos — and <b>every decision stays reversible</b>. Nothing is deleted or moved until you say so.</p>
+    <h1 style="font-size:clamp(40px,6.4vw,84px);line-height:0.98;letter-spacing:-0.035em;font-weight:600;max-width:15ch;text-wrap:balance">Come home with 3,000 photos. Leave with your 50 best.</h1>
+    <p style="margin-top:26px;max-width:62ch;font-size:18px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Point Photo Curator at a folder of JPEG, PNG, iPhone HEIC or RAW files. It drops the blurry frames, collapses burst duplicates and surfaces your keepers. Everything runs on your own machine.</p>
+
+    <div style="margin-top:40px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" style="display:flex;flex-direction:column;gap:2px;padding:14px 22px;border-radius:12px;background:var(--acc);color:var(--acc-ink);min-width:200px" class="h0">
+        <span style="font-weight:600;font-size:16px">Download for Mac</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;opacity:0.8">Apple Silicon M1–M6 · 76 MB</span>
+      </a>
+      <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" style="display:flex;flex-direction:column;gap:2px;padding:14px 22px;border-radius:12px;border:1px solid var(--ink3);background:color-mix(in oklab,var(--bg) 60%,transparent);min-width:200px" class="h1">
+        <span style="font-weight:600;font-size:16px">Download for Windows</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)">x64 · 86 MB</span>
+      </a>
+      <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" style="display:flex;flex-direction:column;gap:2px;padding:14px 22px;border-radius:12px;border:1px solid var(--ink3);background:color-mix(in oklab,var(--bg) 60%,transparent);min-width:200px" class="h2">
+        <span style="font-weight:600;font-size:16px">Download for Linux</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2)">x86_64 · 124 MB</span>
+      </a>
     </div>
+    <p style="margin-top:16px;font-size:14px;color:var(--ink2)">Offline bundles, nothing to install. <a href="#download" style="color:var(--acc);border-bottom:1px solid currentColor">Install steps, requirements and run from source ↓</a></p>
   </div>
 </section>
 
-<!-- FEATURES -->
-<!-- HEIC SUPPORT (v7.0) -->
-<section id="heic">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">🆕 New in v7.0</span>
-      <h2>iPhone HEIC, straight off the phone.</h2>
-      <p class="muted">Drop an iPhone import in and go — no Convert-to-JPEG step, no round trip through Photos. Powered by libheif.</p>
-    </div>
-    <div class="duo">
-      <div class="card reveal">
-        <div class="pad">
-          <h3>📱 HEIC · HEIF · HIF</h3>
-          <p>iPhone and Android stills, plus Canon and Sony HEIF. EXIF comes through intact — <b>date, lens, GPS and orientation</b> — so the map view, burst timing and auto-rotation all work exactly as they do for JPEG. Cull gains a <b>HEIC only</b> chip beside All types · RAW only · JPG only, and every HEIC card wears a teal <b>HEIC</b> tag.</p>
-        </div>
+<!-- CONTACT SHEET -->
+<section style="border-bottom:1px solid var(--line);background:var(--bg2);overflow:hidden">
+  <div style="max-width:1200px;margin:0 auto;padding:36px 24px 0;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase">Roll 07 · 3,000 frames → 50 keepers</span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3)">■ keep &nbsp; ▨ soft &nbsp; ✕ blurry / duplicate</span>
+  </div>
+  <div style="max-width:1200px;margin:0 auto;padding:16px 24px 36px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame0.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">01</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
       </div>
-      <div class="card reveal">
-        <div class="pad">
-          <h3>🖼️ Shown in any browser</h3>
-          <p>Only Safari can render HEIC natively, so the full-size view is served as a <b>cached JPEG transcode</b> — Chrome, Firefox and Edge included. Your <code>.heic</code> files are never touched, and exports always copy the <b>untouched original</b>. Mixed folder of JPEG + HEIC + RAW? One pass handles all three, and every card is tagged with its real format.</p>
-          <p class="muted" style="font-size:12.5px;margin-top:10px">Everything it reads: JPEG · PNG · HEIC / HEIF / HIF · TIFF · BMP · WebP · every RAW format LibRaw handles.</p>
-        </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame1.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">02</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
       </div>
-    </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame2.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">03</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame3.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6) blur(1px)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">04</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#b89a6a;text-shadow:0 1px 2px rgba(0,0,0,0.6)">▨</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame4.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">05</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame5.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">06</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame6.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6) blur(2px)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">07</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame7.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">08</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame0.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">09</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame1.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">10</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame2.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6) blur(1px)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">11</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#b89a6a;text-shadow:0 1px 2px rgba(0,0,0,0.6)">▨</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame3.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">12</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame4.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6) blur(2px)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">13</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame5.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.35;filter:grayscale(0.6)">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">14</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a746d;text-shadow:0 1px 2px rgba(0,0,0,0.6)">✕</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame6.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">15</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
+      <div style="position:relative;aspect-ratio:3/2;border-radius:4px;overflow:hidden;background:var(--panel);border:1px solid var(--line)">
+        <img src="assets/frame7.jpg" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <span style="position:absolute;left:6px;bottom:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7)">16</span>
+        <span style="position:absolute;right:6px;top:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);text-shadow:0 1px 2px rgba(0,0,0,0.6)">■</span>
+      </div>
+    
   </div>
 </section>
 
-<!-- RAW SUPPORT (v6.0) -->
-<section id="raw">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Since v6.0</span>
-      <h2>RAW files, first-class.</h2>
-      <p class="muted">Point it at your RAW shoot — no conversion step, no detours through Lightroom. Powered by LibRaw.</p>
+<!-- STEPS -->
+<section id="steps" style="max-width:1200px;margin:0 auto;padding:96px 24px 40px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:40px;align-items:end;margin-bottom:56px">
+    <div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">The pipeline</p>
+      <h2 style="font-size:clamp(32px,4vw,52px);line-height:1.02;letter-spacing:-0.03em;font-weight:600;text-wrap:balance">Three steps, each feeding the next.</h2>
     </div>
-    <div class="duo">
-      <div class="card reveal">
-        <div class="pad">
-          <h3>📷 Every major RAW format</h3>
-          <p>Canon <b>CR2 / CR3</b>, Nikon <b>NEF</b>, Sony <b>ARW</b>, Adobe <b>DNG</b>, Fuji RAF, Olympus ORF, Panasonic RW2, Pentax PEF and more. Fast by design: the full-size JPEG preview your camera embeds in each RAW is used for thumbnails, analysis and display — EXIF, GPS and orientation included — with a half-size RAW develop as fallback. Exports always copy the <b>untouched original</b>.</p>
+    <p style="font-size:17px;line-height:1.55;color:var(--ink2);text-wrap:pretty">A long shoot is mostly noise: near-identical frames, blurred misfires, a handful of keepers buried in the middle. Photo Curator does the first pass in seconds per hundred photos, and every decision stays reversible. Nothing is deleted or moved until you say so.</p>
+  </div>
+
+  <div style="display:grid;gap:16px">
+    
+      <article style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)">
+        <div style="padding:36px;display:flex;flex-direction:column;gap:18px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc)">Step 1 · Cull</span>
+          <h3 style="font-size:28px;line-height:1.1;letter-spacing:-0.02em;font-weight:600;text-wrap:balance">Drop the out-of-focus shots first.</h3>
+          <p style="font-size:15px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Sharpness is measured as var(Laplacian) / var(image) on a normalized copy, so it judges real focus, not contrast. Big skies, haze and night scenes are kept, not punished.</p>
+          <ul style="margin:4px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--ink2)">
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Sorted into Sharp · Soft (recoverable) · Blurry</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>RAW / JPG filter chips, or a specific format (CR2, NEF, ARW…)</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>One-click Sharp ⇄ Blurry override on any frame</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Adjustable strictness; blurry shots move only when you press the button</span></li>
+            
+          </ul>
         </div>
-      </div>
-      <div class="card reveal">
-        <div class="pad">
-          <h3>🧩 Shoot RAW+JPG? Covered.</h3>
-          <p>Cull gets <b>file-type filter chips</b> — All types · RAW only · JPG only, plus per-format chips (CR2 only, NEF only…) when a folder mixes brands — and every card wears its format tag. A Dedup setting collapses same-frame <b>RAW+JPG pairs</b> to one keeper (keep both / keep RAW / keep JPG), and your choice carries through Dedup and Rank.</p>
+        <div style="background:var(--code);min-height:280px;display:grid;place-items:center;overflow:hidden">
+          <img src="assets/cull.gif" alt="Cull view" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top left">
         </div>
-      </div>
+      </article>
+    
+      <article style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)">
+        <div style="padding:36px;display:flex;flex-direction:column;gap:18px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc)">Step 2 · Dedup</span>
+          <h3 style="font-size:28px;line-height:1.1;letter-spacing:-0.02em;font-weight:600;text-wrap:balance">Collapse the bursts to one keeper.</h3>
+          <p style="font-size:15px;line-height:1.55;color:var(--ink2);text-wrap:pretty">A 192-bit perceptual hash clusters near-duplicates globally; EXIF capture-time tightens bursts and ORB feature-matching stops distinct scenes from being wrongly merged.</p>
+          <ul style="margin:4px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--ink2)">
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>The sharpest frame of each group is kept</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Labelled “Best of N” so you see how many it stood in for</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>RAW+JPG pairs of the same frame can collapse to one</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Vectorized and cached, big cards stay fast</span></li>
+            
+          </ul>
+        </div>
+        <div style="background:var(--code);min-height:280px;display:grid;place-items:center;overflow:hidden">
+          <img src="assets/dedup.gif" alt="Dedup view" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top left">
+        </div>
+      </article>
+    
+      <article style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)">
+        <div style="padding:36px;display:flex;flex-direction:column;gap:18px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc)">Step 3 · Rank</span>
+          <h3 style="font-size:28px;line-height:1.1;letter-spacing:-0.02em;font-weight:600;text-wrap:balance">Surface your TOP N, with the reasoning.</h3>
+          <p style="font-size:15px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Every keeper is scored across five dimensions and shown with a per-photo radar chart and a TOP-N average metric profile. Ranking shows live progress with elapsed time and ETA.</p>
+          <ul style="margin:4px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:14px;color:var(--ink2)">
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Composition · Lighting · Focus · Colour · Contrast</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Adjustable scoring weights</span></li>
+            
+              <li style="display:flex;gap:10px;align-items:baseline"><span style="width:6px;height:6px;border-radius:50%;background:var(--acc);flex:none;transform:translateY(-2px)"></span><span>Skip Dedup? Ranking folds the clustering in automatically</span></li>
+            
+          </ul>
+        </div>
+        <div style="background:var(--code);min-height:280px;display:grid;place-items:center;overflow:hidden">
+          <img src="assets/rank.gif" alt="Rank view" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top left">
+        </div>
+      </article>
+    
+  </div>
+
+  <div style="margin-top:16px;border:1px solid var(--line);border-radius:16px;padding:28px 36px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;background:var(--bg2)">
+    <div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc)">One button</span>
+      <h3 style="font-size:22px;letter-spacing:-0.02em;font-weight:600;margin-top:6px">God Mode runs the whole thing.</h3>
+      <p style="font-size:15px;color:var(--ink2);margin-top:6px;max-width:60ch;text-wrap:pretty">Press once and it advances through Cull → Dedup → Rank, landing on your ranked TOP N without moving a single file. You still review and move rejects yourself.</p>
     </div>
-    <div class="duo" style="margin-top:28px">
-      <div class="card reveal">
-        <div class="pad">
-          <h3>💾 SD cards, every brand</h3>
-          <p>Insert a card and the sidebar finds your shots no matter who made the camera: Canon <code>100CANON</code>, Nikon <code>100NIKON</code>, Sony <code>100MSDCF</code>, Fuji, Olympus, Panasonic, GoPro, DJI… Date-nested DCIM layouts are handled too, empty folders are skipped, and each shortcut is labelled with the detected brand — "SD · Nikon".</p>
-        </div>
-      </div>
-      <div class="card reveal">
-        <div class="pad">
-          <h3>🔒 Still 100% local</h3>
-          <p>RAW and HEIC decoding run on your machine like everything else — no uploads, no cloud APIs. Running from source? RAW and HEIC need two extra libraries: <code>pip install rawpy pillow-heif</code>. Without them the app keeps working on the remaining formats and says so in the sidebar.</p>
-        </div>
-      </div>
-    </div>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink2);padding:10px 16px;border:1px solid var(--line);border-radius:8px;background:var(--panel)">Cull → Dedup → Rank → TOP N</span>
   </div>
 </section>
 
-<section id="features" class="alt">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">The pipeline</span>
-      <h2>Three steps, each feeding the next.</h2>
-    </div>
-
-    <!-- CULL -->
-    <div class="feature reveal">
-      <div class="copy">
-        <span class="tag" style="background:var(--green)">✂️ Step 1 · Cull</span>
-        <h3>Drop the out-of-focus shots first.</h3>
-        <p class="muted">Sharpness is measured as <code>var(Laplacian) / var(image)</code> on a normalized copy — so it judges <i>real</i> focus, not contrast. Big skies, haze and night scenes are kept, not punished.</p>
-        <ul>
-          <li>Sorted into <b>Sharp · Soft (recoverable) · Blurry</b></li>
-          <li><b>RAW / JPG filter chips</b> — RAW only, JPG only, or a specific format (CR2, NEF, ARW…)</li>
-          <li>One-click <b>Sharp ⇄ Blurry</b> override on any frame</li>
-          <li>Adjustable strictness; blurry shots move only when <b>you</b> press the button</li>
-        </ul>
-      </div>
-      <div class="shot"><img src="web/PhotoCuratorCull.gif" alt="Cull view — photos sorted by sharpness"></div>
-    </div>
-
-    <!-- DEDUP -->
-    <div class="feature flip reveal">
-      <div class="copy">
-        <span class="tag" style="background:var(--brand)">🧬 Step 2 · Dedup</span>
-        <h3>Collapse the bursts to one keeper.</h3>
-        <p class="muted">A 192-bit perceptual hash clusters near-duplicates globally; EXIF capture-time tightens bursts and ORB feature-matching stops distinct scenes from being wrongly merged.</p>
-        <ul>
-          <li>The <b>sharpest</b> frame of each group is kept</li>
-          <li>Labelled <b>“Best of N”</b> so you see how many it stood in for</li>
-          <li><b>RAW+JPG pairs</b> of the same frame can collapse to one — keep RAW or keep JPG</li>
-          <li>Vectorized and cached — big cards stay fast</li>
-        </ul>
-      </div>
-      <div class="shot"><img src="web/PhotoCuratorvDedup.gif" alt="Dedup view — burst sequences collapsed to best frames"></div>
-    </div>
-
-    <!-- RANK -->
-    <div class="feature reveal">
-      <div class="copy">
-        <span class="tag" style="background:var(--accent)">🏆 Step 3 · Rank</span>
-        <h3>Surface your TOP N — with the reasoning.</h3>
-        <p class="muted">Every keeper is scored across five dimensions and shown with a per-photo radar chart and a TOP-N average “metric profile.” Tune the weights to your taste; ranking shows live progress with elapsed time and ETA.</p>
-        <ul>
-          <li>Composition · Lighting · Focus · Colour · Contrast</li>
-          <li>Adjustable <b>scoring weights</b> — make it yours</li>
-          <li>Skip Dedup? Ranking folds the clustering in automatically</li>
-        </ul>
-      </div>
-      <div class="shot"><img src="web/PhotoCuratorRank.gif" alt="Rank view — top photos sorted with scores"></div>
-    </div>
+<!-- DEMO -->
+<section style="max-width:1200px;margin:0 auto;padding:40px 24px 96px">
+  <div style="border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/9;background:var(--code)">
+    <iframe src="https://www.youtube-nocookie.com/embed/mR-YvzftQAU" title="Photo Curator demo" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe>
   </div>
 </section>
 
-<!-- EXIF + PHONE -->
-<section>
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Beyond the score</span>
-      <h2>The details that close the loop.</h2>
-    </div>
-    <div class="duo">
-      <div class="card reveal">
-        <div class="media"><img src="SCR-20260601-ldhl.png" alt="EXIF panel with camera settings and a location map"></div>
-        <div class="pad">
-          <h3>📍 EXIF &amp; maps, inline</h3>
-          <p>Open any photo to see camera, lens, exposure, ISO and capture time — plus an inline map pin for geotagged shots, so you remember exactly where that frame happened.</p>
-        </div>
-      </div>
-      <div class="card reveal">
-        <div class="media"><img src="Phones-PhotoCurator-BG.png" alt="Phone wallpapers exported from top photos"></div>
-        <div class="pad">
-          <h3>📱 Phone Background export</h3>
-          <p>Tap to mark a top shot as a wallpaper. Export writes full-res originals plus a universal 1290×2796 (19.5:9) crop — pixel-perfect on iPhone and covering nearly all Android.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- FORMATS -->
+<section id="formats" style="position:relative;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <img src="assets/formats.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;filter:saturate(0.7)">
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,color-mix(in oklab,var(--bg) 85%,transparent) 55%,color-mix(in oklab,var(--bg) 55%,transparent) 100%)"></div>
+  <div style="position:relative;max-width:1200px;margin:0 auto;padding:96px 24px">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Straight off the card</p>
+    <h2 style="font-size:clamp(32px,4vw,52px);line-height:1.02;letter-spacing:-0.03em;font-weight:600;max-width:18ch;text-wrap:balance">RAW and HEIC, first-class. No conversion step.</h2>
+    <p style="margin-top:18px;max-width:60ch;font-size:17px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Point it at a RAW shoot or an iPhone import and go. No detours through Lightroom or Photos. Powered by LibRaw and libheif, decoded on your machine.</p>
 
-<!-- GOD MODE -->
-<section class="alt">
-  <div class="wrap">
-    <div class="godmode reveal">
-      <div class="center">
-        <span class="eyebrow" style="color:#9ec1ff">One button</span>
-        <h2>⚡ God Mode runs the whole thing.</h2>
-        <p>Press once and Photo Curator advances through Cull → Dedup → Rank automatically, landing on your ranked TOP N — <b>without moving a single file</b>. You still review and move rejects yourself.</p>
-        <div class="flow"><span>Cull</span><span>→</span><span>Dedup</span><span>→</span><span>Rank</span><span>→</span><span>TOP N ✨</span></div>
-      </div>
+    <div style="margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px">
+      
+        <div style="padding:26px;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--panel) 88%,transparent);backdrop-filter:blur(8px)">
+          <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">Every major RAW format</h3>
+          <p style="margin-top:10px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Canon CR2 / CR3, Nikon NEF, Sony ARW, Adobe DNG, Fuji RAF, Olympus ORF, Panasonic RW2, Pentax PEF and more. The embedded JPEG preview is used for thumbnails, analysis and display, with a half-size RAW develop as fallback. Exports always copy the untouched original.</p>
+        </div>
+      
+        <div style="padding:26px;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--panel) 88%,transparent);backdrop-filter:blur(8px)">
+          <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">HEIC · HEIF · HIF</h3>
+          <p style="margin-top:10px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">iPhone and Android stills, plus Canon and Sony HEIF. EXIF comes through intact: date, lens, GPS and orientation. Full-size view is a cached JPEG transcode so Chrome, Firefox and Edge work too; your .heic files are never touched.</p>
+        </div>
+      
+        <div style="padding:26px;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--panel) 88%,transparent);backdrop-filter:blur(8px)">
+          <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">Shoot RAW+JPG? Covered.</h3>
+          <p style="margin-top:10px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">File-type filter chips in Cull: All types · RAW only · JPG only · HEIC only, plus per-format chips when a folder mixes brands. Dedup collapses same-frame RAW+JPG pairs to one keeper (keep both / RAW / JPG).</p>
+        </div>
+      
+        <div style="padding:26px;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--panel) 88%,transparent);backdrop-filter:blur(8px)">
+          <h3 style="font-size:18px;font-weight:600;letter-spacing:-0.01em">SD cards, every brand</h3>
+          <p style="margin-top:10px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Insert a card and the sidebar finds your shots: Canon 100CANON, Nikon 100NIKON, Sony 100MSDCF, Fuji, Olympus, Panasonic, GoPro, DJI. Date-nested DCIM layouts handled, empty folders skipped, each shortcut labelled with the detected brand.</p>
+        </div>
+      
     </div>
+    <p style="margin-top:28px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);line-height:1.7">Reads: JPEG · PNG · HEIC / HEIF / HIF · TIFF · BMP · WebP · CR2 · CR3 · NEF · ARW · DNG · RAF · ORF · RW2 · PEF and every RAW format LibRaw handles.</p>
   </div>
 </section>
 
 <!-- PRIVACY -->
-<section id="privacy">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Private by architecture</span>
-      <h2>Your photos never leave your Mac.</h2>
-      <p class="muted">Not a policy — a design. There's no cloud and nothing to sign into.</p>
+<section id="privacy" style="max-width:1200px;margin:0 auto;padding:96px 24px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:40px;align-items:start">
+    <div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Private by architecture</p>
+      <h2 style="font-size:clamp(32px,4vw,52px);line-height:1.02;letter-spacing:-0.03em;font-weight:600;text-wrap:balance">Your photos never leave your machine.</h2>
+      <p style="margin-top:18px;font-size:17px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Not a policy, a design. There is no cloud and nothing to sign into. The app runs a small server bound to <code style="font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink)">127.0.0.1</code> and opens a browser tab against it.</p>
     </div>
-    <div class="grid3">
-      <div class="pcard reveal"><div class="ic">🔒</div><h3>100% local</h3><p>All analysis runs in Python on your machine. The only socket opened is a local server on <code>127.0.0.1</code> so your browser can reach it — unreachable from the network.</p></div>
-      <div class="pcard reveal"><div class="ic">🚫</div><h3>No uploads, no tracking</h3><p>No cloud, no accounts, no telemetry, no third-party trackers. It collects nothing and phones home to nothing.</p></div>
-      <div class="pcard reveal"><div class="ic">↩️</div><h3>Always reversible</h3><p>Nothing is deleted or moved without your say-so. Rejects relocate to <code>Blurred/</code>, <code>Duplicates/</code> or <code>TOP_N/</code> only when you press the button.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT SCORES -->
-<section id="metrics" class="alt">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Under the hood</span>
-      <h2>How it reads a photograph.</h2>
-    </div>
-    <div class="reveal">
-    <table class="how">
-      <tr><th style="width:120px">Step</th><th style="width:280px">Metric</th><th>What it does</th></tr>
-      <tr><td><b>RAW decode</b></td><td>Embedded JPEG preview via rawpy/LibRaw (fallback: half-size demosaic)</td><td>~50× faster than developing the sensor data; EXIF, GPS and orientation preserved. Exports copy the original RAW.</td></tr>
-      <tr><td><b>Cull</b></td><td><code>var(Laplacian) / var(image)</code> on a 1024px copy</td><td>Resolution-independent sharpness that normalizes out contrast, so haze ≠ blur. Threshold adjustable.</td></tr>
-      <tr><td><b>Dedup</b></td><td>192-bit perceptual hash (avg + dual dHash) + ORB confirm</td><td>Global clustering; EXIF-timed bursts get a relaxed bar; the sharpest frame of each group survives.</td></tr>
-      <tr><td><b>Rank</b></td><td>Weighted focus / lighting / contrast / colour / composition</td><td>Per-photo radar plus a TOP-N average profile. Weights are yours to tune.</td></tr>
-    </table>
+    <div style="display:grid;gap:12px">
+      
+        <div style="display:grid;grid-template-columns:44px 1fr;gap:16px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--panel)">
+          <span style="width:44px;height:44px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--acc)">127</span>
+          <div>
+            <h3 style="font-size:17px;font-weight:600">100% local</h3>
+            <p style="margin-top:6px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">All analysis runs in Python on your machine. The only socket opened is a local server on 127.0.0.1 so your browser can reach it, unreachable from the network.</p>
+          </div>
+        </div>
+      
+        <div style="display:grid;grid-template-columns:44px 1fr;gap:16px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--panel)">
+          <span style="width:44px;height:44px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--acc)">0</span>
+          <div>
+            <h3 style="font-size:17px;font-weight:600">No uploads, no tracking</h3>
+            <p style="margin-top:6px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">No cloud, no accounts, no telemetry, no third-party trackers. The only optional outbound requests are OpenFreeMap tiles for the GPS view, loaded by your browser.</p>
+          </div>
+        </div>
+      
+        <div style="display:grid;grid-template-columns:44px 1fr;gap:16px;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--panel)">
+          <span style="width:44px;height:44px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--acc)">↩</span>
+          <div>
+            <h3 style="font-size:17px;font-weight:600">Always reversible</h3>
+            <p style="margin-top:6px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Nothing is deleted or moved without your say-so. Rejects relocate to Blurred/, Duplicates/ or TOP_N/ only when you press the button.</p>
+          </div>
+        </div>
+      
     </div>
   </div>
 </section>
 
 <!-- DOWNLOAD -->
-<section id="download">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="eyebrow">Get started</span>
-      <h2>Download.</h2>
-      <p class="muted">Grab the offline package for your platform — or run it from source. Everything runs 100% locally and opens in your browser at <code>127.0.0.1:5014</code>.</p>
-    </div>
+<section id="download" style="border-top:1px solid var(--line);background:var(--bg2)">
+  <div style="max-width:1200px;margin:0 auto;padding:96px 24px">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--acc);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Get started</p>
+    <h2 style="font-size:clamp(32px,4vw,52px);line-height:1.02;letter-spacing:-0.03em;font-weight:600">Download.</h2>
+    <p style="margin-top:18px;max-width:60ch;font-size:17px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Grab the offline package for your platform, or run it from source. Everything runs locally and opens in your browser at <code style="font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--ink)">127.0.0.1:5014</code>.</p>
 
-    <div class="trio">
-      <!-- OPTION A — OFFLINE -->
-      <div class="card reveal dl-card" style="border-color:var(--brand)">
-        <div class="pad">
-          <div class="dl-head">
-            <h3><svg class="dl-logo" viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Offline package · Mac M1–M6</h3>
-            <div class="dl-meta">
-              <span class="dl-rec">RECOMMENDED</span>
-              <span class="dl-size">~76 MB</span>
-            </div>
+    <div style="margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+      
+        <div style="display:flex;flex-direction:column;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">Mac · Apple Silicon</h3>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);white-space:nowrap">~76 MB</span>
           </div>
-          <p>For anyone who just wants it to work. Python and every image library — RAW and HEIC included — are bundled inside. <b>No install, no terminal, no internet</b> needed.</p>
-          <ol class="steps">
-            <li>Unzip and keep the <b>PhotoCurator</b> folder together.</li>
-            <li>Right-click <b>“Start Photo Curator.command”</b> → <b>Open</b> (first time only).</li>
-            <li>A boot animation plays, then your browser opens automatically.</li>
+          <span style="margin-top:10px;align-self:flex-start;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--acc);border:1px solid var(--acc);padding:4px 8px;border-radius:999px">Recommended</span>
+          <p style="margin-top:14px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Python and every image library, RAW and HEIC included, are bundled inside. No install, no terminal, no internet needed.</p>
+          <ol style="margin:18px 0 0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.5;color:var(--ink2)">
+            <li>Unzip and keep the PhotoCurator folder together.</li><li>Right-click “Start Photo Curator.command” → Open (first time only).</li><li>A boot animation plays, then your browser opens automatically.</li>
           </ol>
-          <div class="cta" style="margin-top:20px">
-            <a class="btn btn-primary" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" rel="noopener">⬇ Download · Apple Silicon</a>
-          </div>
-          <p class="muted" style="font-size:12.5px;margin-top:12px">Apple Silicon (M1–M6) · macOS 11+ · runs entirely offline.</p>
+          <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" style="margin-top:24px;display:block;text-align:center;padding:13px 18px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:600;font-size:15px" class="h3">Download · Apple Silicon</a>
+          <span style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:var(--ink3)">M1–M6 · macOS 11+ · runs entirely offline</span>
         </div>
-      </div>
-
-      <!-- OPTION A2 — WINDOWS OFFLINE -->
-      <div class="card reveal dl-card">
-        <div class="pad">
-          <div class="dl-head">
-            <h3><svg class="dl-logo" viewBox="0 0 448 512" aria-hidden="true"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg> Offline package · Windows</h3>
-            <div class="dl-meta">
-              <span class="dl-size">~86 MB</span>
-            </div>
+      
+        <div style="display:flex;flex-direction:column;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">Windows</h3>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);white-space:nowrap">~86 MB</span>
           </div>
-          <p>The same app with its own private Python 3.11 inside — nothing is installed into Windows, nothing touches an existing Python.</p>
-          <ol class="steps">
-            <li>Unzip and keep the <b>PhotoCurator-Win</b> folder together.</li>
-            <li>Double-click <b>“Start Photo Curator.bat”</b>.</li>
-            <li>SmartScreen may ask once — <b>More info → Run anyway</b>.</li>
+          
+          <p style="margin-top:14px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">The same app with its own private Python 3.11 inside. Nothing is installed into Windows, nothing touches an existing Python.</p>
+          <ol style="margin:18px 0 0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.5;color:var(--ink2)">
+            <li>Unzip and keep the PhotoCurator-Win folder together.</li><li>Double-click “Start Photo Curator.bat”.</li><li>SmartScreen may ask once: More info → Run anyway.</li>
           </ol>
-          <div class="cta" style="margin-top:20px">
-            <a class="btn btn-primary" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" rel="noopener">⬇ Download · Windows x64</a>
-          </div>
-          <p class="muted" style="font-size:12.5px;margin-top:12px">Windows 10 / 11 · 64-bit Intel or AMD · runs entirely offline.</p>
+          <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" style="margin-top:24px;display:block;text-align:center;padding:13px 18px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:600;font-size:15px" class="h4">Download · Windows x64</a>
+          <span style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:var(--ink3)">Windows 10 / 11 · 64-bit Intel or AMD · runs entirely offline</span>
         </div>
-      </div>
-
-      <!-- OPTION A3 — LINUX OFFLINE -->
-      <div class="card reveal dl-card">
-        <div class="pad">
-          <div class="dl-head">
-            <h3><svg class="dl-logo" viewBox="0 0 448 512" aria-hidden="true"><path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7zm-21.9 1.7c1.2 0 2-1.2 3-1.7 1.1-.6 3.1-.4 3.5-1.6.2-.4-.2-.9-.6-1.1-1.6-.9-3.8-.6-5.5.1-1.3.6-3.4 1.5-3.2 2.9.1 1 1.8 1.5 2.8 1.4zM420 403.8c-3.6-4-5.3-11.6-7.2-19.7-1.8-8.1-3.9-16.8-10.5-22.4-1.3-1.1-2.6-2.1-4-2.9-1.3-.8-2.7-1.5-4.1-2 9.2-27.3 5.6-54.5-3.7-79.1-11.4-30.1-31.3-56.4-46.5-74.4-17.1-21.5-33.7-41.9-33.4-72C311.1 85.4 315.7.1 234.8 0 132.4-.2 158 103.4 156.9 135.2c-1.7 23.4-6.4 41.8-22.5 64.7-18.9 22.5-45.5 58.8-58.1 96.7-6 17.9-8.8 36.1-6.2 53.3-6.5 5.8-11.4 14.7-16.6 20.2-4.2 4.3-10.3 5.9-17 8.3s-14 6-18.5 14.5c-2.1 3.9-2.8 8.1-2.8 12.8 0 3.9.5 8 .9 12.3 1 8.1 2 16.7-.6 22.4-3.6 8-5.8 13.6-5.8 20.8 0 9.2 4.2 17.5 11.4 23.4 7.1 5.9 17.3 9.5 30.5 9.5 4.1 0 8.1-.3 11.8-.9 8.4-1.3 15.6-4.4 22.1-7.1 6.5-2.6 12.4-4.7 18.2-4.7 7.2 0 13.6 2.2 19.3 5.9 5.7 3.7 10.6 8.9 14.7 15.1 4.1 6.2 8.9 11.4 14.7 15 5.8 3.6 12.5 5.7 20.4 5.7 10.9 0 19.6-3.6 26.4-9.1 6.8-5.5 11.7-12.9 15.2-20.9 3.5-8 5.6-16.6 6.6-24.9 1-8.3 1-16.3-.1-23.2 6.4 2.9 13.2 4.4 20.1 4.4 12.2 0 24.4-4.5 34.5-12.2 10.1-7.7 18.1-18.6 22.4-31.4 3.9 1.8 8.1 3.1 12.4 3.9 4.3.8 8.7 1.1 13 1.1 8.4 0 16.6-1.3 23.9-4.2 7.3-2.9 13.7-7.4 18.2-13.9 4.5-6.5 6.9-14.8 6.9-24.6 0-6.9-1.7-13-5.3-17z"/></svg> Offline package · Linux</h3>
-            <div class="dl-meta">
-              <span class="dl-size">~124 MB</span>
-            </div>
+      
+        <div style="display:flex;flex-direction:column;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel)">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+            <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">Linux</h3>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3);white-space:nowrap">~124 MB</span>
           </div>
-          <p>Bundled CPython 3.11 and every library inside — <b>no <code>sudo</code></b>, no system Python, nothing installed outside the folder.</p>
-          <ol class="steps">
-            <li>Extract and keep the <b>PhotoCurator-Linux</b> folder together.</li>
-            <li>Run <b>“./start-photo-curator.sh”</b> from a terminal.</li>
-            <li>Open the printed <code>127.0.0.1:5014</code> link in your browser.</li>
+          
+          <p style="margin-top:14px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">Bundled CPython 3.11 and every library inside. No sudo, no system Python, nothing installed outside the folder.</p>
+          <ol style="margin:18px 0 0;padding-left:20px;display:grid;gap:8px;font-size:14px;line-height:1.5;color:var(--ink2)">
+            <li>Extract and keep the PhotoCurator-Linux folder together.</li><li>Run ./start-photo-curator.sh from a terminal.</li><li>Open the printed 127.0.0.1:5014 link in your browser.</li>
           </ol>
-          <div class="cta" style="margin-top:20px">
-            <a class="btn btn-primary" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" rel="noopener">⬇ Download · Linux x64</a>
-          </div>
-          <p class="muted" style="font-size:12.5px;margin-top:12px">x86_64 · glibc 2.28+ (Ubuntu 20.04+, Debian 10+, RHEL 8+) · runs entirely offline.</p>
+          <a href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" style="margin-top:24px;display:block;text-align:center;padding:13px 18px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:600;font-size:15px" class="h5">Download · Linux x64</a>
+          <span style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;color:var(--ink3)">x86_64 · glibc 2.28+ (Ubuntu 20.04+, Debian 10+, RHEL 8+) · runs entirely offline</span>
         </div>
-      </div>
+      
     </div>
 
-    <!-- OPTION C — RUN FROM SOURCE (compact strip) -->
-    <div class="card reveal src-strip">
-      <div class="pad">
-        <div class="src-row">
-          <div class="src-copy">
-            <h3>🛠️ Run from source <span class="src-size">~120 KB</span></h3>
-            <p class="muted">For developers, or anyone comfortable with Python. Tiny download — you install the libraries yourself. Python 3.9+ · macOS / Windows / Linux · MIT licensed.</p>
-          </div>
-          <div class="src-code"><code># requires Python 3.9+</code><br>
-<code>unzip photo-curator-7.zip &amp;&amp; cd photo-curator-7</code><br>
-<code><span class="c">pip install</span> -r requirements.txt</code><br>
-<code><span class="c">python</span> photo_curator.py</code></div>
-          <a class="btn btn-ghost src-btn" href="https://github.com/kotyzap/Photo-Curator/raw/main/photo-curator-7.zip">⬇ Download source</a>
+    <div style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden">
+      <div style="padding:28px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+          <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.01em">Run from source</h3>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3)">~120 KB</span>
         </div>
+        <p style="margin-top:14px;font-size:14px;line-height:1.55;color:var(--ink2);text-wrap:pretty">For developers, or anyone comfortable with Python. Tiny download; you install the libraries yourself. Python 3.9+ · macOS / Windows / Linux · MIT licensed. RAW and HEIC need <code style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink)">pip install rawpy pillow-heif</code>.</p>
+        <a href="https://github.com/kotyzap/Photo-Curator/raw/main/photo-curator-7.zip" style="margin-top:22px;display:inline-block;padding:12px 18px;border-radius:10px;border:1px solid var(--ink3);font-weight:600;font-size:15px" class="h6">Download source</a>
       </div>
+      <pre style="margin:0;padding:28px;background:var(--code);color:#e6e1da;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;overflow:auto"># requires Python 3.9+
+unzip photo-curator-7.zip &amp;&amp; cd photo-curator-7
+pip install -r requirements.txt
+python photo_curator.py</pre>
     </div>
-
-    <p class="muted" style="text-align:center;font-size:13px;margin:26px 0 0">Not sure which? Pick the <b>Offline package</b> for your platform — it needs nothing else installed.<br>All builds run on port 5014 (“50mm f/1.4”) because macOS reserves port 5000 for AirPlay.</p>
-
-    <div class="terminal reveal" style="margin-top:30px">
-      <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
-<pre><span class="d"># what the Offline package shows on launch</span>
-<span class="d">======================================</span>
-        📸  <span class="b">Photo Curator v7.0</span>
-<span class="d">======================================</span>
-
-Using Python: /usr/bin/python3
-Starting the photo engine...
-
-        o          ___________
-       /|\        |  _______  |  )))
-       / \        | | <span class="o">-   -</span> |#|    >>>
-                   | |_______| |  )))
-       you         |___[===]___|
-                    P H O T O   C U R A T O R
-
-   <span class="o">*CLICK*  ✦ flash! ✦</span>
-
-  <span class="g">📸  Got it! Opening your browser...</span>
-  <span class="b">http://127.0.0.1:5014</span>
-</pre>
-    </div>
+    <p style="margin-top:24px;font-size:14px;color:var(--ink3);line-height:1.6;max-width:70ch">Not sure which? Pick the offline package for your platform. All builds run on port 5014 (“50mm f/1.4”) because macOS reserves port 5000 for AirPlay.</p>
   </div>
 </section>
 
-<footer>
-  <div class="wrap foot">
-    <div>
-      <div class="brand">🎞️ Photo Curator</div>
-      <p style="margin:.4em 0 0">Free &amp; open source · MIT License · runs entirely on your machine.</p>
-      <div class="badges">
-        <span>🟢 100% local</span><span>🚫 No uploads</span><span>📡 No telemetry</span><span>⚖️ MIT</span><span>🍏 Mac · 🪟 Windows · 🐧 Linux</span>
-      </div>
-    </div>
-    <div style="text-align:right">
-      <a class="btn btn-kofi" href="https://ko-fi.com/B3S720JCU6" target="_blank">☕ Buy me a Ko-fi</a>
-      <p class="muted" style="margin:.8em 0 0;font-size:12.5px">Made for photographers who shoot a lot and keep a little.</p>
-    </div>
+<footer style="border-top:1px solid var(--line)">
+  <div style="max-width:1200px;margin:0 auto;padding:36px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;font-size:14px;color:var(--ink2)">
+    <span>Photo Curator · Free &amp; open source · MIT · <a href="https://github.com/kotyzap/Photo-Curator" style="color:var(--ink2);border-bottom:1px solid var(--line)">GitHub</a> · <a href="https://ko-fi.com/B3S720JCU6" style="color:var(--ink2);border-bottom:1px solid var(--line)">Ko-fi</a></span>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink3)">Made for photographers who shoot a lot and keep a little.</span>
   </div>
 </footer>
-
+</div>
 <script>
-  // Theme toggle (remembers choice)
-  const root=document.documentElement, tb=document.getElementById('themeBtn');
-  const saved=localStorage.getItem('pc-theme');
-  if(saved){root.setAttribute('data-theme',saved);}
-  const sync=()=>tb.textContent=root.getAttribute('data-theme')==='dark'?'☀️':'🌙';
-  sync();
-  tb.addEventListener('click',()=>{
-    const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
-    root.setAttribute('data-theme',next);localStorage.setItem('pc-theme',next);sync();
-  });
-  // Scroll reveal
-  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+(function(){
+  var t; try { t = localStorage.getItem('pc-theme'); } catch(e) {}
+  apply(t || 'light');
+  function apply(v){
+    document.documentElement.dataset.theme = v;
+    var b = document.getElementById('themeBtn');
+    if (b) b.textContent = (v === 'dark' ? 'Light' : 'Dark');
+  }
+  window.toggleTheme = function(){
+    var v = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('pc-theme', v); } catch(e) {}
+    apply(v);
+  };
+  document.addEventListener('DOMContentLoaded', function(){ apply(document.documentElement.dataset.theme); });
+})();
 </script>
 </body>
 </html>
