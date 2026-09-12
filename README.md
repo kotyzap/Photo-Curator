@@ -158,6 +158,7 @@ In a hurry? Press **⚡ God Mode** to run all three automatically and jump strai
 | Step | Metric | Notes |
 |------|--------|-------|
 | RAW decode | Embedded JPEG preview via `rawpy`/LibRaw (fallback: half-size demosaic) | ~50× faster than developing the sensor data; EXIF/GPS/orientation preserved. Exports copy the original RAW. |
+| GPS map | MapLibre (bundled, no CDN) over [OpenFreeMap](https://openfreemap.org/) vector tiles | Shown in the lightbox for geotagged photos. OpenStreetMap's own tile servers refuse app traffic under their tile usage policy, so the map uses OpenFreeMap. One map instance is reused across photos. |
 | HEIC decode | `pillow-heif`/libheif, registered as a Pillow plugin | EXIF/GPS/orientation preserved. OpenCV can't read HEIF, so analysis routes through Pillow; the browser gets a cached JPEG transcode. Exports copy the original `.heic`. |
 | Cull | `var(Laplacian) / var(image)` on a 1024px copy | Resolution-independent; normalizes out contrast so haze ≠ blur. Threshold is adjustable. |
 | Dedup | 192-bit perceptual hash (avg + dual difference hash) + ORB confirm | Global clustering; EXIF-timed bursts get a relaxed bar; keeps the sharpest frame. RAW+JPG pairs can pre-collapse to one. |

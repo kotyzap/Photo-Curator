@@ -87,9 +87,14 @@ def _security_headers(resp):
     resp.headers['Referrer-Policy'] = 'no-referrer'
     resp.headers.setdefault(
         'Content-Security-Policy',
-        # img-src allows https: for the OpenStreetMap GPS tiles and Ko-fi badge.
-        "default-src 'self'; img-src 'self' data: https:; "
-        "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'")
+        # img-src allows https: for the Ko-fi badge. The GPS map is MapLibre
+        # (served from /vendor, so script-src stays 'self') drawing vector
+        # tiles fetched from OpenFreeMap — hence connect-src, and worker-src
+        # for MapLibre's tile-decoding worker.
+        "default-src 'self'; img-src 'self' data: blob: https:; "
+        "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; "
+        f"connect-src 'self' {MAP_TILES_ORIGIN}; "
+        "worker-src 'self' blob:; child-src 'self' blob:")
     return resp
 
 IMG_EXTS = {'.jpg', '.jpeg', '.png', '.tif', '.tiff', '.bmp', '.webp'}
@@ -113,6 +118,18 @@ else:
     logger.warning("    pip install pillow-heif")
     logger.warning("then restart Photo Curator.")
     logger.warning("=" * 64)
+# The GPS map. OpenStreetMap's own tile servers refuse app traffic (their tile
+# usage policy forbids it, and they answer with an "Access blocked" tile), so
+# the map is MapLibre + OpenFreeMap, which is built for exactly this.
+MAP_TILES_ORIGIN = 'https://tiles.openfreemap.org'
+MAP_STYLE_LIGHT = MAP_TILES_ORIGIN + '/styles/positron'
+MAP_STYLE_DARK = MAP_TILES_ORIGIN + '/styles/dark'
+# MapLibre is vendored (see vendor/) so the app pulls no script off a CDN.
+VENDOR_DIR = Path(__file__).resolve().parent / 'vendor'
+VENDOR_FILES = {'maplibre-gl-csp.js': 'text/javascript',
+                'maplibre-gl-csp-worker.js': 'text/javascript',
+                'maplibre-gl.css': 'text/css'}
+
 RECENTS_FILE = Path.home() / '.photo_curator_recents.json'
 THUMB_DIR = Path('/tmp/photocurator_thumbs')
 THUMB_DIR.mkdir(parents=True, exist_ok=True)
@@ -1008,11 +1025,12 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .exrow .lab{opacity:.55;font-size:11px}
   .exrow .val{text-align:right;line-height:1.35;overflow-wrap:break-word}
   .exrow .val a{color:#60a5fa;text-decoration:none}.exrow .val a:hover{text-decoration:underline}
-  .exmap{display:block;margin:8px 0 4px;text-decoration:none}
-  .exmap .tilewrap{position:relative;display:block;width:256px;max-width:100%;height:256px;overflow:hidden;border-radius:8px;border:1px solid rgba(255,255,255,.12)}
-  .exmap .tilewrap img{display:block;width:256px;height:256px}
-  .exmap .pin{position:absolute;width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none}
+  .exmap{display:block;margin:8px 0 4px}
+  .exmap .mapslot{position:relative;width:256px;max-width:100%;height:256px;overflow:hidden;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:var(--panel2)}
+  .exmap .mappin{position:absolute;left:50%;top:50%;width:12px;height:12px;border-radius:50%;background:#ef4444;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);transform:translate(-50%,-50%);pointer-events:none;z-index:2}
   .exmap .cred{display:block;font-size:9px;opacity:.45;margin-top:3px}
+  .exmap .cred a{color:inherit}
+  .maplibregl-ctrl-attrib,.maplibregl-ctrl-logo{display:none!important}
   .top-right{display:flex;align-items:center;gap:10px}
   .kofi-btn{display:block;line-height:0;transition:transform .12s}
   .kofi-btn:hover{transform:translateY(-2px)} .kofi-btn img{display:block;border-radius:8px;box-shadow:0 3px 12px var(--shadow)}
@@ -1117,7 +1135,8 @@ let weights={...DEFAULTS};
 /* theme */
 const tt=document.getElementById('themeToggle');
 tt.onclick=()=>{const d=document.documentElement.getAttribute('data-theme')==='dark';
-  document.documentElement.setAttribute('data-theme',d?'light':'dark');tt.textContent=d?'🌙':'☀️';};
+  document.documentElement.setAttribute('data-theme',d?'light':'dark');tt.textContent=d?'🌙':'☀️';
+  if(exMap){exMapTheme=currentMapStyle();exMap.setStyle(MAP_STYLES[exMapTheme]);}};
 
 /* settings panels per step */
 function settingsHTML(step){
@@ -1630,7 +1649,7 @@ function loadExif(path,side){
   const token=path;side.dataset.exifToken=token;
   fetch('/api/exif?path='+encodeURIComponent(path)).then(r=>r.json()).then(e=>{
     if(side.dataset.exifToken!==token)return; // user moved on
-    let rows='';
+    let rows='',wantMap=null;
     if(e.date)rows+=exifRow('Date',e.date);
     if(e.time)rows+=exifRow('Time',(e.time||'').split('+')[0]);
     if(e.camera)rows+=exifRow('Camera',e.camera);
@@ -1641,17 +1660,72 @@ function loadExif(path,side){
     if(e.lat!=null&&e.lon!=null){
       const c=e.lat.toFixed(5)+',&nbsp;'+e.lon.toFixed(5);
       rows+=exifRow('Location',`<a href="https://www.google.com/maps?q=${e.lat},${e.lon}" target="_blank" style="white-space:nowrap">${c}</a>`);
-      const z=13,n=Math.pow(2,z),latRad=e.lat*Math.PI/180;
-      const xt=(e.lon+180)/360*n, yt=(1-Math.log(Math.tan(latRad)+1/Math.cos(latRad))/Math.PI)/2*n;
-      const xtile=Math.floor(xt), ytile=Math.floor(yt);
-      const px=Math.round((xt-xtile)*256), py=Math.round((yt-ytile)*256);
-      const tile='https://tile.openstreetmap.org/'+z+'/'+xtile+'/'+ytile+'.png';
-      rows+=`<a href="https://www.openstreetmap.org/?mlat=${e.lat}&mlon=${e.lon}#map=15/${e.lat}/${e.lon}" target="_blank" class="exmap"><span class="tilewrap"><img src="${tile}" alt="Map" loading="lazy" onerror="this.closest('.exmap').style.display='none'"><span class="pin" style="left:${px}px;top:${py}px"></span></span><span class="cred">© OpenStreetMap contributors</span></a>`;
+      rows+=`<div class="exmap"><div class="mapslot" id="exMapSlot"><span class="mappin"></span></div>`
+        +`<span class="cred"><a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> © `
+        +`<a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · data © `
+        +`<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span></div>`;
+      wantMap={lat:e.lat,lon:e.lon};
     }
     if(!rows)rows=`<div style="font-size:12px;opacity:.5">No EXIF metadata.</div>`;
     side.insertAdjacentHTML('beforeend',`<h3>Details</h3>${rows}`);
+    if(wantMap)mountExifMap(wantMap.lat,wantMap.lon);
   }).catch(()=>{});
 }
+
+/* GPS map — MapLibre over OpenFreeMap vector tiles.
+   One map instance is built lazily on the first geotagged photo and then
+   re-parented into each new sidebar; creating a WebGL context per photo would
+   hit the browser's context limit within a few dozen frames. */
+const MAP_STYLES={light:{{ map_style_light|tojson }},dark:{{ map_style_dark|tojson }}};
+let exMapEl=null,exMap=null,exMapLoading=null,exMapTheme=null,exMapDead=false;
+function hideExMap(){const s=document.getElementById('exMapSlot');
+  if(s&&s.closest('.exmap'))s.closest('.exmap').style.display='none';}
+function currentMapStyle(){
+  return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';}
+function loadMapLibre(){
+  if(window.maplibregl)return Promise.resolve(true);
+  if(exMapLoading)return exMapLoading;
+  exMapLoading=new Promise(res=>{
+    const css=document.createElement('link');
+    css.rel='stylesheet';css.href='/vendor/maplibre-gl.css';
+    document.head.appendChild(css);
+    const js=document.createElement('script');
+    js.src='/vendor/maplibre-gl-csp.js';
+    js.onload=()=>{try{maplibregl.setWorkerUrl('/vendor/maplibre-gl-csp-worker.js');}catch(err){}res(true);};
+    js.onerror=()=>res(false);
+    document.head.appendChild(js);
+  });
+  return exMapLoading;}
+function mountExifMap(lat,lon){
+  const slot=document.getElementById('exMapSlot');
+  if(!slot)return;
+  if(exMapDead){slot.closest('.exmap').style.display='none';return;}
+  loadMapLibre().then(ok=>{
+    const s=document.getElementById('exMapSlot');
+    if(!s)return;                       // user moved on while it loaded
+    if(!ok){exMapDead=true;hideExMap();return;}   // no MapLibre: never retry
+    const theme=currentMapStyle();
+    if(!exMap){
+      exMapEl=document.createElement('div');
+      exMapEl.style.cssText='position:absolute;inset:0';
+      s.insertBefore(exMapEl,s.firstChild);
+      exMapTheme=theme;
+      exMap=new maplibregl.Map({container:exMapEl,style:MAP_STYLES[theme],
+        center:[lon,lat],zoom:13,attributionControl:false,
+        interactive:false,refreshExpiredTiles:false});
+      // No tiles (offline, or the provider is down) means an empty grey box —
+      // hide the block rather than show one. Not latched: the next photo
+      // tries again, so the map comes back on its own once the net does.
+      exMap.on('error',()=>{
+        if(exMap&&exMap.isStyleLoaded&&exMap.isStyleLoaded())return;
+        hideExMap();});
+    }else{
+      if(exMapEl.parentNode!==s)s.insertBefore(exMapEl,s.firstChild);
+      if(theme!==exMapTheme){exMapTheme=theme;exMap.setStyle(MAP_STYLES[theme]);}
+      exMap.jumpTo({center:[lon,lat],zoom:13});
+    }
+    exMap.resize();
+  });}
 document.getElementById('lbClose').onclick=closeLb;
 document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLb();});
 document.getElementById('lbPrev').onclick=()=>{lbIndex=(lbIndex-1+lbList.length)%lbList.length;showLb();};
@@ -1713,7 +1787,8 @@ document.getElementById('moveBlurryBtn').onclick=function(){
 # --------------------------------------------------------------------------- #
 @app.route('/')
 def index():
-    return render_template_string(HTML)
+    return render_template_string(HTML, map_style_light=MAP_STYLE_LIGHT,
+                                  map_style_dark=MAP_STYLE_DARK)
 
 
 @app.route('/api/shortcuts')
@@ -1730,6 +1805,21 @@ def api_browse():
         save_recent(folder)
         return jsonify({'folder': folder})
     return jsonify({'folder': None})
+
+
+@app.route('/vendor/<path:name>')
+def vendor_file(name):
+    """Serve the vendored MapLibre build. Whitelisted by name so the route
+    can't be walked out of the vendor directory."""
+    mime = VENDOR_FILES.get(name)
+    if not mime:
+        abort(404)
+    f = VENDOR_DIR / name
+    if not f.is_file():
+        abort(404)
+    resp = send_file(str(f), mimetype=mime)
+    resp.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return resp
 
 
 @app.route('/api/thumb')
