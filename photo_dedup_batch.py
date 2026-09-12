@@ -76,6 +76,9 @@ class FastBatchDeduplicator:
         self.orb_confirm = orb_confirm
         self.use_orb_confirm = use_orb_confirm and _HAVE_CV2
         self._orb = cv2.ORB_create(nfeatures=300) if self.use_orb_confirm else None
+        # One reusable matcher instead of constructing a BFMatcher per pair.
+        self._bf = (cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+                    if self.use_orb_confirm else None)
         self._sig_cache = {}
         # In-memory ORB descriptor cache (keyed by path), so a representative's
         # features are computed at most once even if confirmed repeatedly.
@@ -137,7 +140,12 @@ class FastBatchDeduplicator:
         ckey = self._cache_key(image_path)
         if ckey is not None and ckey in self._disk_cache:
             try:
-                sig = np.array(self._disk_cache[ckey], dtype=bool)
+                v = self._disk_cache[ckey]
+                if isinstance(v, str):     # compact hex format (48 chars)
+                    sig = np.unpackbits(
+                        np.frombuffer(bytes.fromhex(v), np.uint8)).astype(bool)
+                else:                      # legacy list-of-ints format
+                    sig = np.array(v, dtype=bool)
                 self._sig_cache[image_path] = sig
                 return sig
             except Exception:
@@ -160,7 +168,9 @@ class FastBatchDeduplicator:
             sig = None
         self._sig_cache[image_path] = sig
         if ckey is not None and sig is not None:
-            self._disk_cache[ckey] = sig.astype(int).tolist()
+            # Hex-packed (24 bytes → 48 chars) — ~13x smaller than the old
+            # list-of-ints JSON and much faster to load/save.
+            self._disk_cache[ckey] = np.packbits(sig).tobytes().hex()
         return sig
 
     @staticmethod
@@ -237,8 +247,7 @@ class FastBatchDeduplicator:
             n2, d2 = self._orb_descriptors(p2)
             if d1 is None or d2 is None or len(d1) == 0 or len(d2) == 0:
                 return 0.0
-            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-            matches = bf.match(d1, d2)
+            matches = self._bf.match(d1, d2)
             if not matches:
                 return 0.0
             good = sum(1 for m in matches if m.distance < 40)

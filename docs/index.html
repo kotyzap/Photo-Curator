@@ -171,6 +171,27 @@
   .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
   .badges span{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--line-strong);background:var(--panel)}
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .dl-card .pad{display:flex;flex-direction:column;height:100%}
+  .dl-card .steps{flex:1 1 auto}
+  .dl-card .cta{margin-top:auto}
+  .dl-logo{width:20px;height:20px;flex:none;fill:currentColor}
+  .dl-head{margin-bottom:8px}
+  .dl-head h3{margin:0;display:flex;align-items:center;gap:9px;font-size:19px}
+  .dl-meta{display:flex;align-items:center;gap:8px;margin-top:8px;min-height:24px}
+  .dl-rec{background:var(--grad);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px}
+  .dl-size{font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:3px 9px;border-radius:999px}
+  .src-strip{margin-top:20px}
+  .src-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .src-copy{flex:1 1 260px;min-width:240px}
+  .src-copy h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .src-size{font-size:11px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:2px 8px;border-radius:999px}
+  .src-copy p{margin:0;font-size:12.5px;line-height:1.55}
+  .src-code{flex:1 1 320px;min-width:260px;background:#0b0f17;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 13px;
+            font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.65;color:#c8d2e6;overflow-x:auto}
+  .src-code code{color:inherit;background:none;padding:0;white-space:pre}
+  .src-code .c{color:#7cb6ff}
+  .src-btn{flex:0 0 auto;white-space:nowrap}
+  @media(max-width:720px){.src-row{gap:14px}.src-btn{width:100%;justify-content:center}}
   .reveal.in{opacity:1;transform:none}
 </style>
 </head>
@@ -178,8 +199,9 @@
 
 <nav>
   <div class="wrap nav-in">
-    <div class="brand"><a href="https://paolocortezcz.github.io/Photo-Curator/">🎞️ Photo Curator <small>v6.0</small></a></div>
+    <div class="brand"><a href="https://paolocortezcz.github.io/Photo-Curator/">🎞️ Photo Curator <small>v7.0</small></a></div>
     <div class="nav-links">
+      <a href="#heic">HEIC</a>
       <a href="#raw">RAW</a>
       <a href="#features">Features</a>
       <a href="#metrics">How it scores</a>
@@ -197,15 +219,15 @@
 <header class="hero">
   <div class="wrap hero-grid">
     <div class="copy">
-      <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source · 🆕 v6.0</span>
+      <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source · 🆕 v7.0</span>
       <h1>📸 Come home with 3,000 photos.<br>Leave with your <span style="white-space:nowrap"><span class="pop">50 best</span> ✨.</span></h1>
-      <p class="lead">Point Photo Curator at a folder of shots — JPEGs or <b>RAW</b> (CR2 · CR3 · NEF · ARW · DNG &amp; more) — and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own Mac. 🍏</p>
+      <p class="lead">Point Photo Curator at a folder of shots — <b>JPEG</b>, <b>PNG</b>, iPhone <b>HEIC</b> or <b>RAW</b> (CR2 · CR3 · NEF · ARW · DNG &amp; more) — and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own machine. 🍏🪟</p>
       <div class="cta">
-        <a class="btn btn-primary" href="#download">⬇ Download for Mac</a>
+        <a class="btn btn-primary" href="#download">⬇ Download</a>
         <a class="btn btn-ghost" href="#features">See how it works</a>
       </div>
       <div class="trust">
-        <span><i class="dot"></i> <b>RAW</b> supported</span>
+        <span><i class="dot"></i> <b>RAW</b> + <b>HEIC</b> supported</span>
         <span><i class="dot"></i> <b>100%</b> local</span>
         <span><i class="dot"></i> Photos never uploaded</span>
         <span><i class="dot"></i> No accounts · no tracking</span>
@@ -249,11 +271,37 @@
 </section>
 
 <!-- FEATURES -->
+<!-- HEIC SUPPORT (v7.0) -->
+<section id="heic">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">🆕 New in v7.0</span>
+      <h2>iPhone HEIC, straight off the phone.</h2>
+      <p class="muted">Drop an iPhone import in and go — no Convert-to-JPEG step, no round trip through Photos. Powered by libheif.</p>
+    </div>
+    <div class="duo">
+      <div class="card reveal">
+        <div class="pad">
+          <h3>📱 HEIC · HEIF · HIF</h3>
+          <p>iPhone and Android stills, plus Canon and Sony HEIF. EXIF comes through intact — <b>date, lens, GPS and orientation</b> — so the map view, burst timing and auto-rotation all work exactly as they do for JPEG. Cull gains a <b>HEIC only</b> chip beside All types · RAW only · JPG only, and every HEIC card wears a teal <b>HEIC</b> tag.</p>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="pad">
+          <h3>🖼️ Shown in any browser</h3>
+          <p>Only Safari can render HEIC natively, so the full-size view is served as a <b>cached JPEG transcode</b> — Chrome, Firefox and Edge included. Your <code>.heic</code> files are never touched, and exports always copy the <b>untouched original</b>. Mixed folder of JPEG + HEIC + RAW? One pass handles all three, and every card is tagged with its real format.</p>
+          <p class="muted" style="font-size:12.5px;margin-top:10px">Everything it reads: JPEG · PNG · HEIC / HEIF / HIF · TIFF · BMP · WebP · every RAW format LibRaw handles.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- RAW SUPPORT (v6.0) -->
 <section id="raw">
   <div class="wrap">
     <div class="section-head reveal">
-      <span class="eyebrow">🆕 New in v6.0</span>
+      <span class="eyebrow">Since v6.0</span>
       <h2>RAW files, first-class.</h2>
       <p class="muted">Point it at your RAW shoot — no conversion step, no detours through Lightroom. Powered by LibRaw.</p>
     </div>
@@ -281,7 +329,7 @@
       <div class="card reveal">
         <div class="pad">
           <h3>🔒 Still 100% local</h3>
-          <p>RAW decoding runs on your machine like everything else — no uploads, no cloud APIs. Running from source? RAW needs one extra library: <code>pip install rawpy</code>. Without it the app keeps working JPEG-only and says so in the sidebar.</p>
+          <p>RAW and HEIC decoding run on your machine like everything else — no uploads, no cloud APIs. Running from source? RAW and HEIC need two extra libraries: <code>pip install rawpy pillow-heif</code>. Without them the app keeps working on the remaining formats and says so in the sidebar.</p>
         </div>
       </div>
     </div>
@@ -424,20 +472,22 @@
   <div class="wrap">
     <div class="section-head reveal">
       <span class="eyebrow">Get started</span>
-      <h2>Two ways to install.</h2>
-      <p class="muted">Pick the one that fits. Both run 100% locally and open in your browser at <code>127.0.0.1:5014</code>.</p>
+      <h2>Download.</h2>
+      <p class="muted">Grab the offline package for your platform — or run it from source. Everything runs 100% locally and opens in your browser at <code>127.0.0.1:5014</code>.</p>
     </div>
 
     <div class="duo">
       <!-- OPTION A — OFFLINE -->
-      <div class="card reveal" style="border-color:var(--brand)">
+      <div class="card reveal dl-card" style="border-color:var(--brand)">
         <div class="pad">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-            <h3 style="margin:0">📦 Offline package</h3>
-            <span style="background:var(--grad);color:#fff;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px">RECOMMENDED</span>
-            <span style="margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:3px 9px;border-radius:999px">~78 MB</span>
+          <div class="dl-head">
+            <h3><svg class="dl-logo" viewBox="0 0 384 512" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg> Offline package · Mac M1–M6</h3>
+            <div class="dl-meta">
+              <span class="dl-rec">RECOMMENDED</span>
+              <span class="dl-size">~88 MB</span>
+            </div>
           </div>
-          <p>For anyone who just wants it to work. Python and every image library are bundled inside — <b>no install, no terminal, no internet</b> needed.</p>
+          <p>For anyone who just wants it to work. Python and every image library — RAW and HEIC included — are bundled inside. <b>No install, no terminal, no internet</b> needed.</p>
           <ol class="steps">
             <li>Unzip and keep the <b>PhotoCurator</b> folder together.</li>
             <li>Right-click <b>“Start Photo Curator.command”</b> → <b>Open</b> (first time only).</li>
@@ -446,40 +496,57 @@
           <div class="cta" style="margin-top:20px">
             <a class="btn btn-primary" href="https://drive.proton.me/urls/E3KZNWRZRC#keyO4AK7vjMA" target="_blank" rel="noopener">⬇ Download · Apple Silicon</a>
           </div>
-          <p class="muted" style="font-size:12.5px;margin-top:12px">Apple Silicon (M1–M4) · macOS 11+ · runs entirely offline.</p>
+          <p class="muted" style="font-size:12.5px;margin-top:12px">Apple Silicon (M1–M6) · macOS 11+ · runs entirely offline.</p>
         </div>
       </div>
 
-      <!-- OPTION B — SOURCE -->
-      <div class="card reveal">
+      <!-- OPTION A2 — WINDOWS OFFLINE -->
+      <div class="card reveal dl-card">
         <div class="pad">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-            <h3 style="margin:0">🛠️ Run from source</h3>
-            <span style="margin-left:auto;font-size:12.5px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line-strong);padding:3px 9px;border-radius:999px">~120 KB</span>
+          <div class="dl-head">
+            <h3><svg class="dl-logo" viewBox="0 0 448 512" aria-hidden="true"><path d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg> Offline package · Windows</h3>
+            <div class="dl-meta">
+              <span class="dl-size">~95 MB</span>
+            </div>
           </div>
-          <p>For developers, or anyone comfortable with Python. Tiny download — you install the libraries yourself. Cross-platform.</p>
-          <div style="background:#0b0f17;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px;margin:16px 0 4px;font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7;color:#c8d2e6">
-<span style="color:#6b7589"># requires Python 3.9+</span>
-unzip photo-curator-6.zip
-cd photo-curator-6
-<span style="color:#7cb6ff">pip install</span> -r requirements.txt
-<span style="color:#7cb6ff">python</span> photo_curator.py
+          <p>The same app with its own private Python 3.11 inside — nothing is installed into Windows, nothing touches an existing Python.</p>
+          <ol class="steps">
+            <li>Unzip and keep the <b>PhotoCurator-Win</b> folder together.</li>
+            <li>Double-click <b>“Start Photo Curator.bat”</b>.</li>
+            <li>SmartScreen may ask once — <b>More info → Run anyway</b>.</li>
+          </ol>
+          <div class="cta" style="margin-top:20px">
+            <a class="btn btn-primary" href="TODO-WINDOWS-DOWNLOAD-URL" rel="noopener">⬇ Download · Windows x64</a>
           </div>
-          <div class="cta" style="margin-top:18px">
-            <a class="btn btn-ghost" href="https://github.com/PaoloCortezCZ/Photo-Curator/raw/main/photo-curator-6.zip">⬇ Download source</a>
-          </div>
-          <p class="muted" style="font-size:12.5px;margin-top:12px">Python 3.9+ · macOS / Windows / Linux · MIT licensed.</p>
+          <p class="muted" style="font-size:12.5px;margin-top:12px">Windows 10 / 11 · 64-bit Intel or AMD · runs entirely offline.</p>
         </div>
       </div>
     </div>
 
-    <p class="muted" style="text-align:center;font-size:13px;margin:26px 0 0">Not sure which? Pick the <b>Offline package</b> — it needs nothing else installed.<br>Both run on port 5014 (“50mm f/1.4”) because macOS reserves port 5000 for AirPlay.</p>
+    <!-- OPTION C — RUN FROM SOURCE (compact strip) -->
+    <div class="card reveal src-strip">
+      <div class="pad">
+        <div class="src-row">
+          <div class="src-copy">
+            <h3>🛠️ Run from source <span class="src-size">~120 KB</span></h3>
+            <p class="muted">For developers, or anyone comfortable with Python. Tiny download — you install the libraries yourself. Python 3.9+ · macOS / Windows / Linux · MIT licensed.</p>
+          </div>
+          <div class="src-code"><code># requires Python 3.9+</code><br>
+<code>unzip photo-curator-7.zip &amp;&amp; cd photo-curator-7</code><br>
+<code><span class="c">pip install</span> -r requirements.txt</code><br>
+<code><span class="c">python</span> photo_curator.py</code></div>
+          <a class="btn btn-ghost src-btn" href="https://github.com/PaoloCortezCZ/Photo-Curator/raw/main/photo-curator-7.zip">⬇ Download source</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="text-align:center;font-size:13px;margin:26px 0 0">Not sure which? Pick the <b>Offline package</b> for your platform — it needs nothing else installed.<br>All builds run on port 5014 (“50mm f/1.4”) because macOS reserves port 5000 for AirPlay.</p>
 
     <div class="terminal reveal" style="margin-top:30px">
       <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
 <pre><span class="d"># what the Offline package shows on launch</span>
 <span class="d">======================================</span>
-        📸  <span class="b">Photo Curator v6.0</span>
+        📸  <span class="b">Photo Curator v7.0</span>
 <span class="d">======================================</span>
 
 Using Python: /usr/bin/python3

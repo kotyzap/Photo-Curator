@@ -40,6 +40,7 @@ from flask import Flask, render_template_string, request, jsonify, send_file, ab
 from PIL import Image, ImageOps
 
 from raw_loader import (RAW_EXTS, HAS_RAWPY, is_raw,
+                        HEIF_EXTS, HAS_HEIF, is_heif, needs_jpeg_preview,
                         open_image_pil, imread_bgr, imread_gray)
 from photo_ranking_v3 import AdvancedPhotoAnalyzer
 from photo_dedup_batch import FastBatchDeduplicator
@@ -100,6 +101,16 @@ else:
     logger.warning("rawpy is NOT installed — RAW files (CR2/CR3/NEF/ARW/DNG...)")
     logger.warning("will be IGNORED. Enable RAW support with:")
     logger.warning("    pip install rawpy")
+    logger.warning("then restart Photo Curator.")
+    logger.warning("=" * 64)
+# HEIC/HEIF (iPhone photos) — decoded via pillow-heif if installed.
+if HAS_HEIF:
+    IMG_EXTS |= HEIF_EXTS
+else:
+    logger.warning("=" * 64)
+    logger.warning("pillow-heif is NOT installed — HEIC/HEIF files (iPhone")
+    logger.warning("photos) will be IGNORED. Enable HEIC support with:")
+    logger.warning("    pip install pillow-heif")
     logger.warning("then restart Photo Curator.")
     logger.warning("=" * 64)
 RECENTS_FILE = Path.home() / '.photo_curator_recents.json'
@@ -222,12 +233,14 @@ def ftype_label(ftype):
 
 def filter_ftype(paths, ftype):
     """Keep only the selected file type.
-    'raw' = any RAW, 'jpg' = any non-RAW, 'ext:nef' = that exact format,
-    'all'/empty = no filtering."""
+    'raw' = any RAW, 'heic' = any HEIF, 'jpg' = everything else,
+    'ext:nef' = that exact format, 'all'/empty = no filtering."""
     if ftype == 'raw':
         return [p for p in paths if is_raw(p)]
+    if ftype == 'heic':
+        return [p for p in paths if is_heif(p)]
     if ftype == 'jpg':
-        return [p for p in paths if not is_raw(p)]
+        return [p for p in paths if not is_raw(p) and not is_heif(p)]
     if str(ftype).startswith('ext:'):
         want = ftype[4:].lower()
         return [p for p in paths
@@ -531,6 +544,7 @@ def run_cull(folder, strictness, adaptive, rescue_on):
                                'thumb': thumb_url(it['path']), 'score': f"{it['region_s']:.0f}",
                                'badge': badge, 'badgeType': bt, 'tier': tier,
                                'raw': is_raw(it['path']), 'fmt': fmt_of(it['path']),
+                               'heic': is_heif(it['path']),
                                'kept': tier != 'blurry', 'rejected': tier == 'blurry'})
             # Newest-processed first in the live grid (no scrolling to bottom).
             # Only the display order is reversed; `kept` stays in capture order
@@ -872,7 +886,7 @@ def run_rank(folder, ftype='all', pair='both'):
 # --------------------------------------------------------------------------- #
 HTML = r'''<!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Photo Curator v6.0</title>
+<title>Photo Curator v7.0</title>
 <style>
   :root{--bg:#f4f6fb;--panel:#fff;--panel2:#eef1f7;--text:#1c2330;--muted:#6b7280;
         --accent:#2563eb;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--border:#dde3ec;--shadow:rgba(20,40,80,.10);color-scheme:light}
@@ -947,6 +961,7 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .chip-sep{width:1px;height:18px;background:var(--border);margin:0 4px;align-self:center}
   .ftype{flex:none;margin-left:4px;padding:1px 5px;border-radius:3px;background:#8a2be2;color:#fff;font-size:9px;font-weight:700;letter-spacing:.5px}
   .ftype.jpg{background:#64748b}
+  .ftype.heic{background:#0d9488}
   .wgroup select{width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font-size:13px}
   .badge-tier{border:none;cursor:pointer;font:inherit;font-size:10px;font-weight:700}
   .badge-tier:hover{filter:brightness(1.15);box-shadow:0 0 0 2px rgba(0,0,0,.25)}
@@ -1010,7 +1025,7 @@ HTML = r'''<!doctype html><html lang="en"><head>
   .toast.good{border-left-color:var(--good)} .toast.bad{border-left-color:var(--bad)} .toast.info{border-left-color:var(--accent)}
 </style></head><body>
 <div class="top">
-  <div class="brand">🎞️ Photo Curator <small>v6.0</small></div>
+  <div class="brand">🎞️ Photo Curator <small>v7.0</small></div>
   <div class="steps">
     <div class="step active" data-step="cull">1 · Cull</div>
     <div class="step" data-step="dedup">2 · Dedup</div>
@@ -1188,7 +1203,9 @@ function setupFilterBar(){
     const opts=[['all','All'],['sharp','Sharp'],['soft','Soft ★'],['blurry','Blurry']];
     // Per-format chips (NEF, CR2, ARW, ...) built from what's actually loaded.
     const rawFmts=[...new Set(photos.filter(p=>p.raw).map(p=>p.fmt||'RAW'))].sort();
+    const hasHeic=photos.some(p=>p.heic);
     const types=[['all','All types'],['raw','RAW only'],['jpg','JPG only'],
+      ...(hasHeic?[['heic','HEIC only']]:[]),
       ...(rawFmts.length>1?rawFmts.map(f=>['ext:'+f.toLowerCase(),f+' only']):[])];
     if(!types.some(([k])=>k===cullType))cullType='all';
     bar.style.display='flex';
@@ -1228,6 +1245,10 @@ function loadShortcuts(){fetch('/api/shortcuts').then(r=>r.json()).then(d=>{
     +`padding:8px 10px;font-size:11px;line-height:1.5;margin-bottom:6px">⚠️ <b>RAW support off</b> — `
     +`rawpy is not installed, so CR2/NEF/ARW/DNG files are skipped.<br>`
     +`Run <code>pip install rawpy</code> and restart.</div>`+h;
+  if(d.heif===false)h=`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;`
+    +`padding:8px 10px;font-size:11px;line-height:1.5;margin-bottom:6px">⚠️ <b>HEIC support off</b> — `
+    +`pillow-heif is not installed, so iPhone .heic files are skipped.<br>`
+    +`Run <code>pip install pillow-heif</code> and restart.</div>`+h;
   document.getElementById('shortcuts').innerHTML=h;
   document.querySelectorAll('.shortcut').forEach(b=>b.onclick=()=>{folder=b.dataset.p;document.getElementById('folderInput').value=folder;});});}
 loadShortcuts();
@@ -1258,7 +1279,7 @@ function startStep(step){
   const ad=document.getElementById('cAdaptive'),rs=document.getElementById('cRescue');
   // Carry the Cull file-type filter (RAW only / JPG only) into Dedup & Rank.
   if(step!=='cull'&&cullType!=='all'){
-    const tl=cullType==='raw'?'RAW':cullType==='jpg'?'JPG':cullType.replace('ext:','').toUpperCase();
+    const tl=cullType.startsWith('ext:')?cullType.slice(4).toUpperCase():cullType.toUpperCase();
     toast('Continuing with '+tl+' files only — switch the Cull filter to "All types" to include everything','');
   }
   fetch('/api/run/'+step,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1497,7 +1518,7 @@ function cullCardHtml(p,idx){const path=String(p.path).replace(/"/g,'&quot;');
   return `<div class="photo-card ${cls}" data-i="${idx}" data-path="${path}" data-tier="${p.tier}">
     <button class="badge ${p.badgeType} badge-tier" data-path="${path}" data-tier="${p.tier}" title="Click to change: Sharp → Soft → Blurry">⇄ ${p.badge}</button>
     <img class="photo-img" src="${p.thumb}" loading="lazy" decoding="async">
-    <div class="photo-info"><div class="pi-row"><span class="photo-name">${p.name}</span><span class="ftype${p.raw?'':' jpg'}">${p.fmt||(p.raw?'RAW':'JPG')}</span></div><div class="photo-score">${p.score}</div></div></div>`;}
+    <div class="photo-info"><div class="pi-row"><span class="photo-name">${p.name}</span><span class="ftype${p.raw?'':(p.heic?' heic':' jpg')}">${p.fmt||(p.raw?'RAW':p.heic?'HEIC':'JPG')}</span></div><div class="photo-score">${p.score}</div></div></div>`;}
 function renderCullStep(items){
   photos=items;
   // Rebuild the type chips if a new RAW format appeared during the run.
@@ -1505,7 +1526,8 @@ function renderCullStep(items){
   if(fSig!==lastFmtSig){lastFmtSig=fSig;setupFilterBar();}
   cullView=items.filter(p=>(cullFilter==='all'||p.tier===cullFilter)
     &&(cullType==='all'||(cullType==='raw'?!!p.raw
-      :cullType==='jpg'?!p.raw
+      :cullType==='heic'?!!p.heic
+      :cullType==='jpg'?(!p.raw&&!p.heic)
       :('ext:'+String(p.fmt||'').toLowerCase())===cullType)));
   const g=document.getElementById('gallery');
   if(!cullView.length){g.innerHTML=EMPTY;lastCullSig='';lastStep=currentStep;document.getElementById('sShowing').textContent=0;return;}
@@ -1697,7 +1719,7 @@ def index():
 @app.route('/api/shortcuts')
 def api_shortcuts():
     return jsonify({'sd': detect_sd_cards(), 'recent': load_recents(),
-                    'rawpy': HAS_RAWPY})
+                    'rawpy': HAS_RAWPY, 'heif': HAS_HEIF})
 
 
 @app.route('/api/browse', methods=['POST'])
@@ -1724,7 +1746,8 @@ def api_thumb():
 
 
 def _raw_preview_file(image_path):
-    """Browser-displayable JPEG for a RAW file (browsers can't render CR2/NEF).
+    """Browser-displayable JPEG for a RAW or HEIC file (browsers can't render
+    CR2/NEF, and only Safari renders HEIC).
     Cached on disk like thumbnails, keyed by path+mtime."""
     try:
         mtime = os.path.getmtime(image_path)
@@ -1749,7 +1772,7 @@ def api_image():
     p = _safe_image_path(request.args.get('path', ''))
     if not p:
         abort(404)
-    if is_raw(p):
+    if needs_jpeg_preview(p):
         f = _raw_preview_file(str(p))
         if not f:
             abort(404)

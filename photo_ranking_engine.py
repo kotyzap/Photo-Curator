@@ -105,7 +105,8 @@ class PhotoAnalyzer:
         image_files = []
 
         # Find all image files
-        for ext in ['*.jpg', '*.jpeg', '*.png', '*.cr2', '*.tiff']:
+        for ext in ['*.jpg', '*.jpeg', '*.png', '*.cr2', '*.tiff',
+                    '*.heic', '*.heif']:
             image_files.extend(path.glob(ext.lower()))
             image_files.extend(path.glob(ext.upper()))
 

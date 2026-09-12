@@ -1,4 +1,4 @@
-# Photo Curator — pinned dependencies (v5)
+# Photo Curator — pinned dependencies (v7)
 # Versions match the tested macOS offline bundle. Pinning exact versions makes
 # installs reproducible and lets `pip-audit` / `safety` check a known set.
 #
@@ -17,6 +17,12 @@ opencv-python-headless==4.10.0.84
 # RAW photo support (CR2/CR3, NEF, ARW, DNG, ...) via LibRaw bindings.
 # Optional: the app runs without it, but RAW files won't be recognised.
 rawpy>=0.21,<1.0
+
+# HEIC/HEIF photo support (iPhone .heic, .heif, Canon/Sony .hif) via libheif.
+# Optional: the app runs without it, but HEIC files won't be recognised.
+# Note: 1.x needs Pillow>=11.1; on Python 3.9 the last supported release is
+# 1.1.1 (the offline bundles pin exactly that).
+pillow-heif>=0.18,<2.0
 
 # Transitive (pinned for reproducibility; pulled in by Flask)
 Werkzeug==3.1.8

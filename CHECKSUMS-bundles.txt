@@ -1,0 +1,6 @@
+# Photo Curator v7.0 — offline bundle checksums
+# Run in the folder containing the .zip files:
+#   shasum -a 256 -c CHECKSUMS-bundles.txt
+
+be463b8540905d2c751262329651c4a5e2f8f134b2965479e0d13abe85e2aedc  PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip
+e9ed1c4aab32a99f98a8fb7ab35df371070e976ef4b7341ae4ab7cfbfd94ec15  PhotoCurator-Windows-x64-Offline-v7.0.zip

@@ -46,16 +46,16 @@ class PhotoOrganizer:
                     results['skipped'] += 1
                     continue
                 
-                # Don't move if already in Blurred
-                if 'Blurred' in str(src):
+                # Don't move if already in Blurred (exact parent match — a
+                # substring test would wrongly skip e.g. .../Blurred_old/x.jpg)
+                if src.parent.name == 'Blurred':
                     results['skipped'] += 1
                     continue
-                
+
                 dst = self.rozmazane_dir / src.name
-                
+
                 # Handle duplicates in destination
                 if dst.exists():
-                    name_parts = src.stem.split('_')
                     dst = self.rozmazane_dir / f"{src.stem}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{src.suffix}"
                 
                 if not self.dry_run:
@@ -91,8 +91,8 @@ class PhotoOrganizer:
                     results['skipped'] += 1
                     continue
                 
-                # Don't move if already in Duplicates
-                if 'Duplicates' in str(src):
+                # Don't move if already in Duplicates (exact parent match)
+                if src.parent.name == 'Duplicates':
                     results['skipped'] += 1
                     continue
                 

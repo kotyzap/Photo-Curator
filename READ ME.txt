@@ -1,4 +1,4 @@
-PHOTO CURATOR v6.0 — Offline, for Apple Silicon Macs (M1/M2/M3/M4)
+PHOTO CURATOR v7.0 — Offline, for Apple Silicon Macs (M1/M2/M3/M4)
 
 TO START:
 1. Keep this whole "PhotoCurator" folder together (don't move files out).
@@ -12,7 +12,24 @@ TO START:
 TO QUIT:
 Close the Terminal window, or press Ctrl-C in it.
 
-NEW IN v6.0 — RAW SUPPORT:
+FORMATS READ:
+JPEG, PNG, HEIC/HEIF/HIF, TIFF, BMP, WebP, and every RAW format LibRaw
+handles. Each photo card is tagged with its format. PNG, TIFF and BMP
+carry no EXIF, so those frames get no capture date or map pin.
+
+NEW IN v7.0 — HEIC / iPhone PHOTOS:
+- .heic / .heif / .hif files are curated alongside JPEG and RAW —
+  point Photo Curator straight at an iPhone import, no conversion step.
+- In Cull, the new "HEIC only" filter chip isolates them, and HEIC
+  frames carry a teal HEIC tag.
+- Your browser can't display HEIC (except Safari), so the full-size
+  view is served as a transcoded JPEG — the originals are never
+  modified, and exports always copy the untouched .heic.
+- Running from source instead of this bundle? HEIC needs one extra
+  library: pip install pillow-heif
+  (Without it the app still works and says so in the sidebar.)
+
+RAW SUPPORT (since v6.0):
 - RAW files are curated alongside JPEGs: Canon CR2/CR3, Nikon NEF,
   Sony ARW, Adobe DNG, Fuji RAF, Olympus ORF, Panasonic RW2 and more.
 - Fast: the full-size preview your camera embeds in every RAW is used
