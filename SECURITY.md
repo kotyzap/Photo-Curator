@@ -3,8 +3,9 @@
 Photo Curator is a **100% local** desktop tool. It runs a small Flask server bound
 to `127.0.0.1` and opens a browser tab against it. No data leaves your machine:
 no uploads, no telemetry, no external APIs (the only outbound requests are
-optional OpenStreetMap map tiles in the GPS view and a Ko-fi donate badge, both
-loaded by your browser, not the app).
+optional OpenFreeMap vector map tiles in the GPS view and a Ko-fi donate badge,
+both loaded by your browser, not the app; the map library itself is bundled, not
+loaded from a CDN).
 
 This document describes the threat model and the mitigations in place.
 
