@@ -124,7 +124,9 @@
   .card p{margin:0;color:var(--ink-soft);font-size:15px}
   .card .media{background:#0b0f17;display:grid;place-items:center}
   .card .media img{width:100%}
-  @media(max-width:820px){.duo{grid-template-columns:1fr}}
+  .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  @media(max-width:1040px){.trio{grid-template-columns:1fr 1fr}}
+  @media(max-width:820px){.duo{grid-template-columns:1fr}.trio{grid-template-columns:1fr}}
 
   /* GODMODE */
   .godmode{background:var(--brand-deep);color:#fff;border-radius:24px;padding:46px;position:relative;overflow:hidden}
@@ -476,7 +478,7 @@
       <p class="muted">Grab the offline package for your platform — or run it from source. Everything runs 100% locally and opens in your browser at <code>127.0.0.1:5014</code>.</p>
     </div>
 
-    <div class="duo">
+    <div class="trio">
       <!-- OPTION A — OFFLINE -->
       <div class="card reveal dl-card" style="border-color:var(--brand)">
         <div class="pad">
@@ -519,6 +521,28 @@
             <a class="btn btn-primary" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" rel="noopener">⬇ Download · Windows x64</a>
           </div>
           <p class="muted" style="font-size:12.5px;margin-top:12px">Windows 10 / 11 · 64-bit Intel or AMD · runs entirely offline.</p>
+        </div>
+      </div>
+
+      <!-- OPTION A3 — LINUX OFFLINE -->
+      <div class="card reveal dl-card">
+        <div class="pad">
+          <div class="dl-head">
+            <h3><svg class="dl-logo" viewBox="0 0 448 512" aria-hidden="true"><path d="M220.8 123.3c1 .5 1.8 1.7 3 1.7 1.1 0 2.8-.4 2.9-1.5.2-1.4-1.9-2.3-3.2-2.9-1.7-.7-3.9-1-5.5-.1-.4.2-.8.7-.6 1.1.3 1.3 2.3 1.1 3.4 1.7zm-21.9 1.7c1.2 0 2-1.2 3-1.7 1.1-.6 3.1-.4 3.5-1.6.2-.4-.2-.9-.6-1.1-1.6-.9-3.8-.6-5.5.1-1.3.6-3.4 1.5-3.2 2.9.1 1 1.8 1.5 2.8 1.4zM420 403.8c-3.6-4-5.3-11.6-7.2-19.7-1.8-8.1-3.9-16.8-10.5-22.4-1.3-1.1-2.6-2.1-4-2.9-1.3-.8-2.7-1.5-4.1-2 9.2-27.3 5.6-54.5-3.7-79.1-11.4-30.1-31.3-56.4-46.5-74.4-17.1-21.5-33.7-41.9-33.4-72C311.1 85.4 315.7.1 234.8 0 132.4-.2 158 103.4 156.9 135.2c-1.7 23.4-6.4 41.8-22.5 64.7-18.9 22.5-45.5 58.8-58.1 96.7-6 17.9-8.8 36.1-6.2 53.3-6.5 5.8-11.4 14.7-16.6 20.2-4.2 4.3-10.3 5.9-17 8.3s-14 6-18.5 14.5c-2.1 3.9-2.8 8.1-2.8 12.8 0 3.9.5 8 .9 12.3 1 8.1 2 16.7-.6 22.4-3.6 8-5.8 13.6-5.8 20.8 0 9.2 4.2 17.5 11.4 23.4 7.1 5.9 17.3 9.5 30.5 9.5 4.1 0 8.1-.3 11.8-.9 8.4-1.3 15.6-4.4 22.1-7.1 6.5-2.6 12.4-4.7 18.2-4.7 7.2 0 13.6 2.2 19.3 5.9 5.7 3.7 10.6 8.9 14.7 15.1 4.1 6.2 8.9 11.4 14.7 15 5.8 3.6 12.5 5.7 20.4 5.7 10.9 0 19.6-3.6 26.4-9.1 6.8-5.5 11.7-12.9 15.2-20.9 3.5-8 5.6-16.6 6.6-24.9 1-8.3 1-16.3-.1-23.2 6.4 2.9 13.2 4.4 20.1 4.4 12.2 0 24.4-4.5 34.5-12.2 10.1-7.7 18.1-18.6 22.4-31.4 3.9 1.8 8.1 3.1 12.4 3.9 4.3.8 8.7 1.1 13 1.1 8.4 0 16.6-1.3 23.9-4.2 7.3-2.9 13.7-7.4 18.2-13.9 4.5-6.5 6.9-14.8 6.9-24.6 0-6.9-1.7-13-5.3-17z"/></svg> Offline package · Linux</h3>
+            <div class="dl-meta">
+              <span class="dl-size">~124 MB</span>
+            </div>
+          </div>
+          <p>Bundled CPython 3.11 and every library inside — <b>no <code>sudo</code></b>, no system Python, nothing installed outside the folder.</p>
+          <ol class="steps">
+            <li>Extract and keep the <b>PhotoCurator-Linux</b> folder together.</li>
+            <li>Run <b>“./start-photo-curator.sh”</b> from a terminal.</li>
+            <li>Open the printed <code>127.0.0.1:5014</code> link in your browser.</li>
+          </ol>
+          <div class="cta" style="margin-top:20px">
+            <a class="btn btn-primary" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" rel="noopener">⬇ Download · Linux x64</a>
+          </div>
+          <p class="muted" style="font-size:12.5px;margin-top:12px">x86_64 · glibc 2.28+ (Ubuntu 20.04+, Debian 10+, RHEL 8+) · runs entirely offline.</p>
         </div>
       </div>
     </div>
@@ -574,7 +598,7 @@ Starting the photo engine...
       <div class="brand">🎞️ Photo Curator</div>
       <p style="margin:.4em 0 0">Free &amp; open source · MIT License · runs entirely on your machine.</p>
       <div class="badges">
-        <span>🟢 100% local</span><span>🚫 No uploads</span><span>📡 No telemetry</span><span>⚖️ MIT</span><span>🍏 Apple Silicon</span>
+        <span>🟢 100% local</span><span>🚫 No uploads</span><span>📡 No telemetry</span><span>⚖️ MIT</span><span>🍏 Mac · 🪟 Windows · 🐧 Linux</span>
       </div>
     </div>
     <div style="text-align:right">

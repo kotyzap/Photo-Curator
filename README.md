@@ -127,6 +127,20 @@ Self-contained Python 3.11 and every library included — nothing is installed i
 
 Unzip the folder, keep it together, double-click **"Start Photo Curator.bat"**. SmartScreen may ask once: *More info → Run anyway*.
 
+### 📦 Offline package for Linux
+
+Bundled CPython 3.11 and every library included — no `sudo`, no system Python, nothing installed outside the folder.
+
+➡️ **[Download · Linux x64](https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz)** — ~124 MB · x86_64 · glibc 2.28+ (Ubuntu 20.04+, Debian 10+, RHEL/Rocky 8+)
+
+```bash
+tar -xzf PhotoCurator-Linux-x64-Offline-v7.0.tar.gz
+cd PhotoCurator-Linux
+./start-photo-curator.sh
+```
+
+> x86_64 only — ARM (Raspberry Pi, Ampere) and musl distros (Alpine) are not covered by this bundle; run from source there instead.
+
 ### 🛠️ Run from source
 
 Requires **Python 3.9+**.
@@ -168,7 +182,7 @@ Thumbnails are cached under your system temp dir, so the first pass over a folde
 
 ## Platform notes
 
-Tested on **macOS** (Apple Silicon) and **Windows 10/11 x64**. On macOS the native folder picker uses `osascript` and SD-card detection scans `/Volumes`; on Windows it uses the standard folder dialog and scans drive letters for `DCIM`. On Linux those conveniences are skipped, but you can paste a folder path into the field and everything else works.
+Tested on **macOS** (Apple Silicon), **Windows 10/11 x64** and **Linux x86_64**. On macOS the native folder picker uses `osascript` and SD-card detection scans `/Volumes`; on Windows it uses the standard folder dialog and scans drive letters for `DCIM`. On Linux those two conveniences are skipped, but you can paste a folder path into the field and everything else works the same.
 
 ## ☕ Support the project
 
