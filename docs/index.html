@@ -66,11 +66,12 @@
   .hero h1 .pop{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
   .lead{font-size:clamp(17px,1.7vw,20px);color:var(--ink-soft);max-width:34ch;margin:.2em 0 1.4em}
   .cta{display:flex;gap:12px;flex-wrap:wrap}
-  .hero-dl{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
-  .btn-plat{flex:0 1 auto}
-  .btn-plat .plat-size{font-weight:600;font-size:12px;opacity:.72}
+  .hero-dl{display:flex;gap:8px;flex-wrap:nowrap;margin-top:4px}
+  .btn-plat{flex:1 1 0;min-width:0;justify-content:center;gap:6px;padding:12px 10px;font-size:13.5px;white-space:nowrap}
+  .btn-plat .plat-size{font-weight:600;font-size:11.5px;opacity:.72}
   .hero-dl-note{margin:10px 0 0;font-size:12.5px;color:var(--ink-soft)}
-  @media(max-width:520px){.hero-dl{flex-direction:column;align-items:stretch}.btn-plat{justify-content:center}}
+  .hero .cta{margin-top:18px}
+  @media(max-width:560px){.hero-dl{flex-wrap:wrap}.btn-plat{flex:1 1 100%}}
   .trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:13.5px;color:var(--ink-soft)}
   .trust b{color:var(--ink)}
   .trust span{display:inline-flex;align-items:center;gap:7px}
@@ -229,15 +230,15 @@
       <span class="eyebrow">📍 Local · 🔌 Offline · 💛 Open source · 🆕 v7.0</span>
       <h1>📸 Come home with 3,000 photos.<br>Leave with your <span style="white-space:nowrap"><span class="pop">50 best</span> ✨.</span></h1>
       <p class="lead">Point Photo Curator at a folder of shots — <b>JPEG</b>, <b>PNG</b>, iPhone <b>HEIC</b> or <b>RAW</b> (CR2 · CR3 · NEF · ARW · DNG &amp; more) — and it does the ruthless first pass for you — 🗑️ drops the blurry frames, 🧬 collapses burst duplicates, and 🏆 surfaces your keepers. All on your own machine. 🍏🪟</p>
+      <div class="hero-dl">
+        <a class="btn btn-primary btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" rel="noopener">⬇ 🍏 Mac ‧ M1–M6 <span class="plat-size">76 MB</span></a>
+        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" rel="noopener">⬇ 🪟 Windows <span class="plat-size">86 MB</span></a>
+        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" rel="noopener">⬇ 🐧 Linux <span class="plat-size">124 MB</span></a>
+      </div>
+      <p class="hero-dl-note">Offline bundles — nothing to install. <a href="#download">Install steps, requirements &amp; run from source ↓</a></p>
       <div class="cta">
         <a class="btn btn-ghost" href="#features">See how it works</a>
       </div>
-      <div class="hero-dl">
-        <a class="btn btn-primary btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip" rel="noopener">⬇ 🍏 Mac M1–M6 <span class="plat-size">76 MB</span></a>
-        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Windows-x64-Offline-v7.0.zip" rel="noopener">⬇ 🪟 Windows x64 <span class="plat-size">86 MB</span></a>
-        <a class="btn btn-ghost btn-plat" href="https://github.com/kotyzap/Photo-Curator/releases/download/v7.0/PhotoCurator-Linux-x64-Offline-v7.0.tar.gz" rel="noopener">⬇ 🐧 Linux x64 <span class="plat-size">124 MB</span></a>
-      </div>
-      <p class="hero-dl-note">Offline bundles — nothing to install. <a href="#download">Install steps, requirements &amp; run from source ↓</a></p>
       <div class="trust">
         <span><i class="dot"></i> <b>RAW</b> + <b>HEIC</b> supported</span>
         <span><i class="dot"></i> <b>100%</b> local</span>
