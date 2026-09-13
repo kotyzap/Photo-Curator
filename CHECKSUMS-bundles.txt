@@ -4,5 +4,5 @@
 #   sha256sum -c CHECKSUMS-bundles.txt        (Linux)
 
 fb252a4094e1062f2093685dac0bd5d1aef046a4047e638a3b4312d2ed952167  PhotoCurator-Mac-AppleSilicon-Offline-v7.0.zip
-4d8378d8f99413d110a26f1f269ccfbd11040c5979b653adf29176e29f95b0ee  PhotoCurator-Windows-x64-Offline-v7.0.zip
+f59165de16bea019450740706aae8ba2d0d9cac850f627161a5c4f0c4339b47f  PhotoCurator-Windows-x64-Offline-v7.0.zip
 35b15558c55aee7234dcf011bfd796eb4a4a630c22877cf5367a361b03a70ede  PhotoCurator-Linux-x64-Offline-v7.0.tar.gz
