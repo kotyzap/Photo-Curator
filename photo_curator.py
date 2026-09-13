@@ -365,7 +365,53 @@ def _has_images(d):
     return False
 
 
-def detect_sd_cards(volumes_root='/Volumes'):
+def _sd_roots():
+    """Mount points that may hold a camera card, per OS.
+
+    Windows: only drives the OS reports as removable or fixed (a USB card
+    reader shows up as either) — probing all of A:..Z: blindly can stall on
+    empty optical or disconnected network drives.
+    macOS: /Volumes/*.  Linux: /media/<user>/*, /run/media/<user>/*,
+    /media/* and /mnt/*.
+    """
+    roots = []
+    if os.name == 'nt':
+        try:
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            mask = k32.GetLogicalDrives()
+            for i in range(26):
+                if not (mask >> i) & 1:
+                    continue
+                letter = '%s:\\' % chr(65 + i)
+                if k32.GetDriveTypeW(letter) in (2, 3):  # removable, fixed
+                    roots.append(Path(letter))
+        except Exception:
+            import string
+            roots = [Path('%s:\\' % L) for L in string.ascii_uppercase]
+    else:
+        user = os.environ.get('USER') or os.environ.get('LOGNAME') or ''
+        bases = [Path('/Volumes')]
+        if user:
+            bases += [Path('/media') / user, Path('/run/media') / user]
+        bases += [Path('/media'), Path('/mnt')]
+        seen = set()
+        for base in bases:
+            try:
+                if not base.is_dir():
+                    continue
+                for vol in sorted(base.iterdir()):
+                    if vol.name.startswith('.') or not vol.is_dir():
+                        continue
+                    if str(vol) not in seen:
+                        seen.add(str(vol))
+                        roots.append(vol)
+            except OSError:
+                continue
+    return roots
+
+
+def detect_sd_cards(volumes_root=None):
     """Find camera folders on mounted cards for ALL brands.
     Every camera writes to DCIM/<something> (Canon 100CANON, Nikon 100NIKON,
     Sony 100MSDCF, Fuji 100_FUJI, ...). We list each DCIM subfolder that
@@ -373,37 +419,40 @@ def detect_sd_cards(volumes_root='/Volumes'):
     cameras that nest by date, skip hidden/junk entries, and label the brand.
     Returns [{'path': ..., 'brand': 'Nikon'|None}, ...]."""
     found = []
-    volumes = Path(volumes_root)
-    if volumes.is_dir():
-        for vol in sorted(volumes.iterdir()):
-            dcim = vol / 'DCIM'
-            if not dcim.is_dir():
+    if volumes_root is None:
+        roots = _sd_roots()
+    else:
+        _vr = Path(volumes_root)
+        roots = sorted(_vr.iterdir()) if _vr.is_dir() else []
+    for vol in roots:
+        dcim = vol / 'DCIM'
+        if not dcim.is_dir():
+            continue
+        added = False
+        try:
+            subs = sorted(d for d in dcim.iterdir() if d.is_dir()
+                          and not d.name.startswith('.')
+                          and d.name.upper() != 'MISC')
+        except OSError:
+            continue
+        for d in subs:
+            if _has_images(d):
+                found.append({'path': str(d), 'brand': _brand_of(d.name)})
+                added = True
                 continue
-            added = False
+            # One level deeper — some cameras nest by date inside DCIM/<dir>.
             try:
-                subs = sorted(d for d in dcim.iterdir() if d.is_dir()
-                              and not d.name.startswith('.')
-                              and d.name.upper() != 'MISC')
+                deeper = sorted(x for x in d.iterdir() if x.is_dir()
+                                and not x.name.startswith('.'))
             except OSError:
-                continue
-            for d in subs:
-                if _has_images(d):
-                    found.append({'path': str(d), 'brand': _brand_of(d.name)})
+                deeper = []
+            for dd in deeper:
+                if _has_images(dd):
+                    found.append({'path': str(dd),
+                                  'brand': _brand_of(d.name) or _brand_of(dd.name)})
                     added = True
-                    continue
-                # One level deeper — some cameras nest by date inside DCIM/<dir>.
-                try:
-                    deeper = sorted(x for x in d.iterdir() if x.is_dir()
-                                    and not x.name.startswith('.'))
-                except OSError:
-                    deeper = []
-                for dd in deeper:
-                    if _has_images(dd):
-                        found.append({'path': str(dd),
-                                      'brand': _brand_of(d.name) or _brand_of(dd.name)})
-                        added = True
-            if not added and _has_images(dcim):
-                found.append({'path': str(dcim), 'brand': None})
+        if not added and _has_images(dcim):
+            found.append({'path': str(dcim), 'brand': None})
     return found
 
 
@@ -1255,11 +1304,14 @@ setupFilterBar();
 document.getElementById('gallery').innerHTML=emptyHTML(currentStep);  // step explainer on load
 
 /* shortcuts */
+function sdLabel(p){const parts=p.split(/[\\/]/).filter(Boolean);
+  const tail=parts.slice(-2).join('/');
+  const m=/^([A-Za-z]:)/.exec(p);return m?m[1]+' '+tail:tail;}
 function loadShortcuts(){fetch('/api/shortcuts').then(r=>r.json()).then(d=>{
   let h='';(d.sd||[]).forEach(o=>{const p=(typeof o==='string')?o:o.path;
     const br=(o&&o.brand)?(' · '+o.brand):'';
-    h+=`<button class="shortcut" data-p="${p}"><span class="tag sd">SD${br}</span>${p.split('/').slice(-2).join('/')}</button>`;});
-  (d.recent||[]).slice(0,4).forEach(p=>h+=`<button class="shortcut" data-p="${p}"><span class="tag recent">RECENT</span>${p.split('/').slice(-2).join('/')}</button>`);
+    h+=`<button class="shortcut" data-p="${p}"><span class="tag sd">SD${br}</span>${sdLabel(p)}</button>`;});
+  (d.recent||[]).slice(0,4).forEach(p=>h+=`<button class="shortcut" data-p="${p}"><span class="tag recent">RECENT</span>${sdLabel(p)}</button>`);
   if(d.rawpy===false)h=`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;`
     +`padding:8px 10px;font-size:11px;line-height:1.5;margin-bottom:6px">⚠️ <b>RAW support off</b> — `
     +`rawpy is not installed, so CR2/NEF/ARW/DNG files are skipped.<br>`
@@ -1268,9 +1320,11 @@ function loadShortcuts(){fetch('/api/shortcuts').then(r=>r.json()).then(d=>{
     +`padding:8px 10px;font-size:11px;line-height:1.5;margin-bottom:6px">⚠️ <b>HEIC support off</b> — `
     +`pillow-heif is not installed, so iPhone .heic files are skipped.<br>`
     +`Run <code>pip install pillow-heif</code> and restart.</div>`+h;
+  if(!(d.sd||[]).length)h+=`<div style="font-size:11px;color:var(--muted);margin-top:6px">No memory card detected \u2014 insert one (it appears here automatically) or use Browse.</div>`;
   document.getElementById('shortcuts').innerHTML=h;
   document.querySelectorAll('.shortcut').forEach(b=>b.onclick=()=>{folder=b.dataset.p;document.getElementById('folderInput').value=folder;});});}
 loadShortcuts();
+setInterval(()=>{if(!document.hidden)loadShortcuts();},8000);  // pick up a card inserted later
 document.getElementById('folderInput').oninput=e=>folder=e.target.value.trim();
 document.getElementById('browseBtn').onclick=()=>fetch('/api/browse',{method:'POST'}).then(r=>r.json()).then(d=>{
   if(d.folder){folder=d.folder;document.getElementById('folderInput').value=folder;loadShortcuts();}});
